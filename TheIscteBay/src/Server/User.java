@@ -27,4 +27,8 @@ public class User implements Serializable {
 		return ID;
 	}
 
+	public String toString() {
+		return "Utilizador: " + ID + ", " + ip + ", " + port;
+	}
+
 }

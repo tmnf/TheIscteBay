@@ -1,7 +1,6 @@
 package Users;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.io.File;
 
@@ -16,6 +15,8 @@ import javax.swing.WindowConstants;
 public class GUI {
 
 	private JFrame mainFrame;
+
+	private JList<File> list;
 
 	public GUI() {
 		initWindow();
@@ -37,7 +38,7 @@ public class GUI {
 		topPanel.setLayout(new GridLayout(1, 3, 0, 2));
 		bottPanel.setLayout(new BorderLayout());
 
-		// Top Panel\\
+		// ==================Top Panel======================== \\
 		JTextField txt = new JTextField("Texto a procurar:  ");
 		JTextField searchField = new JTextField();
 		JButton searchButton = new JButton("Procurar");
@@ -47,13 +48,13 @@ public class GUI {
 		topPanel.add(txt);
 		topPanel.add(searchField);
 		topPanel.add(searchButton);
-		// =========\\
+		// ====================================================== \\
 
-		// Bottom Panel\\
+		// ==================Bot Panel======================== \\
 		JPanel rightPanel = new JPanel();
 		rightPanel.setLayout(new GridLayout(2, 1));
 
-		JList<String> list = new JList<>();
+		list = new JList<>(); // 1 Fase. Nao importa o tipo
 
 		JButton download = new JButton("Descarregar");
 		JProgressBar downProgress = new JProgressBar();
@@ -63,22 +64,16 @@ public class GUI {
 
 		bottPanel.add(rightPanel, BorderLayout.WEST);
 		bottPanel.add(rightPanel, BorderLayout.EAST);
-		// =========\\
+		// =======================================================\\
 
 		mainFrame.add(topPanel, BorderLayout.NORTH);
 		mainFrame.add(bottPanel, BorderLayout.SOUTH);
-
 	}
 
-	private void start() {
+	public void open() {
 		mainFrame.pack();
 		mainFrame.setLocationRelativeTo(null);
 		mainFrame.setVisible(true);
-	}
-
-	public static void main(String[] args) {
-		GUI window = new GUI();
-		window.start();
 	}
 
 }

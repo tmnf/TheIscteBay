@@ -12,6 +12,7 @@ import Server.User;
 
 public class Client extends Thread {
 
+	// Sockets
 	private ServerSocket ss;
 	private Socket so;
 
@@ -19,8 +20,12 @@ public class Client extends Thread {
 	private ObjectInputStream in;
 	private ObjectOutputStream out;
 
+	// NetworkVariables
 	private String serverIp, filePath;
 	private int serverPort, clientPort;
+
+	// GUI
+	private GUI gui;
 
 	public Client(String serverIp, int serverPort, int clientPort, String filePath) {
 		this.serverIp = serverIp;
@@ -28,18 +33,22 @@ public class Client extends Thread {
 		this.clientPort = clientPort;
 		this.filePath = filePath; // Useless for now...
 
-		connectToServer();
+		connectToDirectory();
 		registerOnServer();
+
+		gui = new GUI();
+		gui.open();
 	}
 
-	private void connectToServer() {
+	private void connectToDirectory() {
 		try {
 			so = new Socket(serverIp, serverPort);
 
 			out = new ObjectOutputStream(so.getOutputStream());
 			in = new ObjectInputStream(so.getInputStream());
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.err.println("Falha na conexão");
+			System.exit(1);
 		}
 	}
 
@@ -58,9 +67,9 @@ public class Client extends Thread {
 			try {
 				Object aux = in.readObject();
 				for (User x : (LinkedList<User>) aux)
-					System.out.println(x.getEndereco() + "," + x.getPorto());
+					System.out.println(x);
 			} catch (Exception e) {
-				// TODO: handle exception
+				e.printStackTrace();
 			}
 		}
 	}
@@ -69,13 +78,12 @@ public class Client extends Thread {
 		try {
 			out.writeObject("CLT");
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
 	public static void main(String[] args) {
-		Client client = new Client("192.168.1.75", 8080, 4043, "Alguma");
+		Client client = new Client("192.168.1.75", 8080, 4043, "Alguma"); // Usar args[0], args[1], args[2], args[3]
 		client.start();
 
 		client.requestClients();

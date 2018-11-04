@@ -33,7 +33,7 @@ public class Server {
 		while (true) {
 			try {
 				Socket so = ss.accept();
-				new ClientHandler(so, this, currentId++).start();
+				new ClientHandler(so, this, currentId).start();
 				System.out.println("Client conectado" + so);
 			} catch (Exception e) {
 				System.err.println("Erro ao conectar");
@@ -47,7 +47,7 @@ public class Server {
 		}
 	}
 
-	public synchronized void disconectClient(int ID) {
+	public synchronized void disconectUser(int ID) {
 		usersOnline.remove(ID);
 		currentId--;
 	}
@@ -57,7 +57,7 @@ public class Server {
 	}
 
 	public static void main(String[] args) {
-		Server server = new Server(8080);
+		Server server = new Server(8080); // Usar args[0]
 		server.startServer();
 	}
 

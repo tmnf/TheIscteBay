@@ -37,7 +37,7 @@ public class ClientHandler extends Thread {
 					out.writeObject(server.getUsersOnline());
 
 			} catch (Exception e) {
-				server.disconectClient(ID);
+				server.disconectUser(ID);
 				return;
 			}
 
