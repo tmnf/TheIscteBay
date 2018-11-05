@@ -1,4 +1,4 @@
-package Server;
+package Users;
 
 import java.io.Serializable;
 
@@ -28,7 +28,7 @@ public class User implements Serializable {
 	}
 
 	public String toString() {
-		return "Utilizador: " + ID + ", " + ip + ", " + port;
+		return ip + " " + port + " " + ID;
 	}
 
 }

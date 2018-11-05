@@ -5,6 +5,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+import Users.User;
+
 public class ClientHandler extends Thread {
 
 	private Server server;
@@ -33,8 +35,13 @@ public class ClientHandler extends Thread {
 
 				if (aux[0].equals("INSC"))
 					server.registerUser(aux[1], Integer.parseInt(aux[2]), ID);
-				else if (aux[0].equals("CLT"))
-					out.writeObject(server.getUsersOnline());
+				else {
+					if (aux[0].equals("CLT")) {
+						for (User x : server.getUsersOnline())
+							out.writeObject("CLT " + x.toString());
+						out.writeObject("END");
+					}
+				}
 
 			} catch (Exception e) {
 				server.disconectUser(ID);

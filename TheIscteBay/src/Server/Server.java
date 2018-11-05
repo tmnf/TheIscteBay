@@ -4,6 +4,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
 
+import Users.User;
+
 public class Server {
 
 	private ServerSocket ss;
@@ -33,7 +35,7 @@ public class Server {
 		while (true) {
 			try {
 				Socket so = ss.accept();
-				new ClientHandler(so, this, currentId).start();
+				new ClientHandler(so, this, currentId++).start();
 				System.out.println("Client conectado" + so);
 			} catch (Exception e) {
 				System.err.println("Erro ao conectar");
