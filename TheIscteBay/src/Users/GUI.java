@@ -2,23 +2,33 @@ package Users;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
-import java.io.File;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
+
+import SearchClasses.FileDetails;
+import SearchClasses.WordSearchMessage;
 
 public class GUI {
 
 	private JFrame mainFrame;
 
-	private JList<File> list;
+	private JList<FileDetails> list;
 
-	public GUI() {
+	private Client client;
+
+	public GUI(Client client) {
+		this.client = client;
+
 		initWindow();
 		initComponents();
 	}
@@ -45,6 +55,14 @@ public class GUI {
 
 		txt.setEditable(false);
 
+		searchButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (!searchField.getText().isEmpty())
+					client.requestAndConnectAndSearch(new WordSearchMessage(searchField.getText()));
+			}
+		});
+
 		topPanel.add(txt);
 		topPanel.add(searchField);
 		topPanel.add(searchButton);
@@ -54,7 +72,7 @@ public class GUI {
 		JPanel rightPanel = new JPanel();
 		rightPanel.setLayout(new GridLayout(2, 1));
 
-		list = new JList<>(); // 1 Fase. Nao importa o tipo
+		list = new JList<>();
 
 		JButton download = new JButton("Descarregar");
 		JProgressBar downProgress = new JProgressBar();
@@ -62,12 +80,22 @@ public class GUI {
 		rightPanel.add(download);
 		rightPanel.add(downProgress);
 
-		bottPanel.add(rightPanel, BorderLayout.WEST);
+		bottPanel.add(new JScrollPane(list));
 		bottPanel.add(rightPanel, BorderLayout.EAST);
 		// =======================================================\\
 
 		mainFrame.add(topPanel, BorderLayout.NORTH);
 		mainFrame.add(bottPanel, BorderLayout.SOUTH);
+	}
+
+	public void showOnList(ArrayList<FileDetails> list) {
+		FileDetails[] files = new FileDetails[list.size()];
+		int i = 0;
+		for (FileDetails x : list) {
+			files[i] = x;
+			i++;
+		}
+		this.list.setListData(files);
 	}
 
 	public void open() {

@@ -2,6 +2,7 @@ package Server;
 
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 import Users.User;
@@ -12,11 +13,11 @@ public class Server {
 
 	private int serverPort, currentId;
 
-	private LinkedList<User> usersOnline;
+	private HashMap<Integer, User> users;
 
 	public Server(int serverPort) {
 		this.serverPort = serverPort;
-		usersOnline = new LinkedList<>();
+		users = new HashMap<>();
 	}
 
 	public void startServer() {
@@ -30,7 +31,7 @@ public class Server {
 		}
 	}
 
-	private void acceptClients() {
+	private synchronized void acceptClients() {
 		System.out.println("À espera de conexões...");
 		while (true) {
 			try {
@@ -44,18 +45,21 @@ public class Server {
 	}
 
 	public void registerUser(String adress, int port, int id) {
-		synchronized (usersOnline) {
-			usersOnline.add(new User(adress, port, id));
+		synchronized (users) {
+			users.put(id, new User(adress, port, id));
 		}
 	}
 
-	public synchronized void disconectUser(int ID) {
-		usersOnline.remove(ID);
-		currentId--;
+	public void disconectUser(int ID) {
+		synchronized (users) {
+			users.remove(ID);
+			currentId--;
+		}
 	}
 
-	public synchronized LinkedList<User> getUsersOnline() {
-		return usersOnline;
+	public LinkedList<User> getUsersOnline() {
+		LinkedList<User> temp = new LinkedList<>(users.values());
+		return temp;
 	}
 
 	public static void main(String[] args) {

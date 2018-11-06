@@ -3,6 +3,7 @@ package Connections;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.LinkedList;
 
 import Users.Client;
@@ -10,45 +11,43 @@ import Users.User;
 
 public class ServerConnection extends GeneralConnection {
 
+	private LinkedList<User> tempList;
+
 	public ServerConnection(Socket so, Client client) throws IOException {
 		super(so, client);
+		tempList = new LinkedList<>();
+		registerOnServer();
 	}
 
-	public void run() {
-		while (!interrupted()) {
-			try {
-				String[] aux = ((String) in.readObject()).split(" ");
+	public void dealWith(Object aux) throws IOException {
+		String[] temp = ((String) aux).split(" ");
 
-				if (aux[0].equals("CLT")) {
-					LinkedList<User> tempList = new LinkedList<>();
-					while (!aux[0].equals("END")) {
-						tempList.add(new User(aux[1], Integer.parseInt(aux[2]), Integer.parseInt(aux[3])));
-						aux = ((String) in.readObject()).split(" ");
-					}
-					mainClient.refreshPeersOnline(tempList);
+		if (temp[0].equals("CLT")) {
+			while (!temp[0].equals("END")) {
+				tempList.add(new User(temp[1], Integer.parseInt(temp[2]), Integer.parseInt(temp[3])));
+				try {
+					temp = ((String) in.readObject()).split(" ");
+				} catch (Exception e) {
+					System.err.println("Falha ao receber");
+					System.exit(1);
 				}
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.out.println("Conexão terminada");
 			}
+			mainClient.refreshPeersOnline(tempList);
 		}
 	}
 
 	public void registerOnServer() {
 		try {
 			String insc = "INSC " + InetAddress.getLocalHost().getHostAddress() + " " + mainClient.getClientPort();
-			out.writeObject(insc);
-		} catch (Exception e) {
-			e.printStackTrace();
+			send(insc);
+		} catch (UnknownHostException e) {
+			System.err.println("Erro ao registar no servidor");
+			System.exit(1);
 		}
 	}
 
 	public void requestClients() {
-		try {
-			out.writeObject("CLT");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		send("CLT");
 	}
 
 }

@@ -23,6 +23,30 @@ public abstract class GeneralConnection extends Thread {
 	}
 
 	@Override
-	public abstract void run();
+	public void run() {
+		while (!interrupted()) {
+			try {
+				Object aux = in.readObject();
+				dealWith(aux);
 
+				if (this instanceof PeerConnection) {
+					mainClient.disconectPeer((PeerConnection) this);
+					interrupt();
+				}
+			} catch (Exception e) {
+				return;
+			}
+		}
+		System.out.println("Conexão terminada...");
+	}
+
+	public void send(Object ob) {
+		try {
+			out.writeObject(ob);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public abstract void dealWith(Object aux) throws IOException;
 }

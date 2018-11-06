@@ -19,11 +19,12 @@ public class ClientHandler extends Thread {
 	public ClientHandler(Socket so, Server server, int ID) {
 		this.server = server;
 		this.ID = ID;
+
 		try {
 			out = new ObjectOutputStream(so.getOutputStream());
 			in = new ObjectInputStream(so.getInputStream());
 		} catch (IOException e) {
-			System.err.println(e.getStackTrace());
+			System.err.println("Erro na criação da Thread do cliente");
 		}
 	}
 
@@ -47,7 +48,6 @@ public class ClientHandler extends Thread {
 				server.disconectUser(ID);
 				return;
 			}
-
 		}
 	}
 
