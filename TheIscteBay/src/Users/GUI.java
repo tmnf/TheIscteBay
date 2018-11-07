@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -59,7 +58,7 @@ public class GUI {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (!searchField.getText().isEmpty())
-					client.requestAndConnectAndSearch(new WordSearchMessage(searchField.getText()));
+					client.requestFileSearch(new WordSearchMessage(searchField.getText()));
 			}
 		});
 
@@ -88,14 +87,8 @@ public class GUI {
 		mainFrame.add(bottPanel, BorderLayout.SOUTH);
 	}
 
-	public void showOnList(ArrayList<FileDetails> list) {
-		FileDetails[] files = new FileDetails[list.size()];
-		int i = 0;
-		for (FileDetails x : list) {
-			files[i] = x;
-			i++;
-		}
-		this.list.setListData(files);
+	public void showOnList(FileDetails[] list) {
+		this.list.setListData(list);
 	}
 
 	public void open() {

@@ -29,7 +29,7 @@ public abstract class GeneralConnection extends Thread {
 				Object aux = in.readObject();
 				dealWith(aux);
 
-				if (this instanceof PeerConnection) {
+				if (this instanceof PeerConnection) { // Terminar a conexão com o par após operações desejadas
 					mainClient.disconectPeer((PeerConnection) this);
 					interrupt();
 				}
@@ -37,7 +37,7 @@ public abstract class GeneralConnection extends Thread {
 				return;
 			}
 		}
-		System.out.println("Conexão terminada...");
+		System.out.println("Conexão terminada.");
 	}
 
 	public void send(Object ob) {

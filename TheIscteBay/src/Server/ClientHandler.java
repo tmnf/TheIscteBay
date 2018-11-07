@@ -24,7 +24,7 @@ public class ClientHandler extends Thread {
 			out = new ObjectOutputStream(so.getOutputStream());
 			in = new ObjectInputStream(so.getInputStream());
 		} catch (IOException e) {
-			System.err.println("Erro na criação da Thread do cliente");
+			System.err.println("Erro na criação dos canais da Thread do cliente");
 		}
 	}
 

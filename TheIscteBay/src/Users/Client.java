@@ -1,11 +1,11 @@
 package Users;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.LinkedList;
 
 import Connections.GeneralConnection;
@@ -33,7 +33,7 @@ public class Client {
 	private LinkedList<User> usersOnline;
 	private LinkedList<PeerConnection> peers;
 
-	private boolean refreshed; // Temp
+	private boolean refreshed; // Manter controlo sobre a resposta do servidor
 
 	public Client(String serverIp, int serverPort, int clientPort, String filePath) {
 		this.serverIp = serverIp;
@@ -54,10 +54,13 @@ public class Client {
 	// LIGAÇÕES COM O SERVIDOR
 
 	private void connectToDirectory() {
+		System.out.println("A tentar conectar ao servidor...");
 		try {
+			long initialTime = System.currentTimeMillis();
 			Socket so = new Socket(serverIp, serverPort);
 			serverConected = new ServerConnection(so, this);
 			serverConected.start();
+			System.out.println("Conectado ao servidor, Time: " + (System.currentTimeMillis() - initialTime) + " ms");
 		} catch (Exception e) {
 			System.err.println("Falha na conexão com o servidor");
 			System.exit(1);
@@ -78,26 +81,34 @@ public class Client {
 
 	// LIGAÇÕES COM UM PAR
 
-	public void requestAndConnectAndSearch(WordSearchMessage keyWord) { // Temp, para testing
+	public void requestFileSearch(WordSearchMessage keyWord) { // Temp, para testing
 		requestClients();
+		System.out.println("A processar lista...");
 		while (!refreshed) {
-			System.out.println("A processar lista...");
-		}
-
-		if (usersOnline.size() != 0) { // Se houver alguem online procurar enviar busca de ficheiro
-			for (User x : usersOnline) {
-				if (x.getPorto() != clientPort) // Mudar para getAdress quando usado em diferentes computadores
-					connectToPeer(x.getEndereco(), x.getPorto());
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
-			for (PeerConnection peer : peers)
-				peer.send(keyWord);
 		}
+		if (usersOnline.size() > 1) // Se houver alguem online(Fora o proprio) enviar busca de ficheiro
+			sendFileInfoRequest(keyWord);
+		else
+			System.out.println("Nenhum utilizador online");
+	}
+
+	public void sendFileInfoRequest(WordSearchMessage keyWord) {
+		for (User x : usersOnline)
+			if (x.getPorto() != clientPort) { // Mudar para getAdress quando usado em diferentes computadores
+				connectToPeer(x.getEndereco(), x.getPorto());
+				peers.getLast().send(keyWord);
+			}
 	}
 
 	public void connectToPeer(String ip, int port) {
 		try {
 			Socket so = new Socket(ip, port);
-			System.out.println("conexao establecida com " + so);
+			System.out.println("Conexão establecida com " + so.getInetAddress());
 			PeerConnection temp = new PeerConnection(so, this);
 			temp.start();
 			peers.add(temp);
@@ -118,7 +129,7 @@ public class Client {
 	private void startOwnServerSocket() {
 		try {
 			ss = new ServerSocket(clientPort);
-			System.out.println("Servidor-Cliente ligado..");
+			System.out.println("Servidor-Cliente ligado com sucesso.");
 			new Thread(new Runnable() {
 				@Override
 				public void run() {
@@ -126,7 +137,7 @@ public class Client {
 					while (true) {
 						try {
 							Socket so = ss.accept();
-							System.out.println("Par conectado: " + so);
+							System.out.println("Par conectado: " + so.getInetAddress());
 							new PeerConnection(so, Client.this).start();
 						} catch (IOException e) {
 							e.printStackTrace();
@@ -140,24 +151,29 @@ public class Client {
 		}
 	}
 
-	public ArrayList<FileDetails> getFilesWithName(String fileName) throws IOException {
-		File[] files = new File(filePath).listFiles();
-		ArrayList<FileDetails> aux = new ArrayList<>();
-		int i = 0;
-
-		while (i != files.length) {
-			if (files[i].getName().contains(fileName)) {
-				byte[] fileContent = Files.readAllBytes(files[i].toPath());
-				aux.add(new FileDetails(files[i].getName(), fileContent.length));
+	public FileDetails[] getFilesWithName(String fileName) throws IOException {
+		File[] filesInFolder = new File(filePath).listFiles(new FilenameFilter() {
+			@Override
+			public boolean accept(File dir, String name) {
+				return name.contains(fileName);
 			}
+		});
+
+		FileDetails[] filesWithKeyWord = new FileDetails[filesInFolder.length];
+
+		int i = 0;
+		while (i != filesInFolder.length) {
+			byte[] fileContent = Files.readAllBytes(filesInFolder[i].toPath());
+			filesWithKeyWord[i] = new FileDetails(filesInFolder[i].getName(), fileContent.length);
 			i++;
 		}
-		return aux;
+
+		return filesWithKeyWord;
 	}
 
 	// METODOS GUI
 
-	public void showOnGuiList(ArrayList<FileDetails> list) { // A funcionar so para uma thread ainda
+	public void showOnGuiList(FileDetails[] list) { // A funcionar so para uma thread ainda
 		gui.showOnList(list);
 	}
 
@@ -168,8 +184,7 @@ public class Client {
 	}
 
 	public static void main(String[] args) {
-		new Client("192.168.1.75", 8080, 4042, "files"); // Usar args[0], args[1], args[2], args[3]
-		new Client("192.168.1.75", 8080, 4043, "files");
+		new Client("192.168.1.75", 8080, 4041, "files"); // Usar args[0], args[1], args[2], args[3]
 	}
 
 }

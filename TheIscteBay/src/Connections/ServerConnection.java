@@ -28,7 +28,7 @@ public class ServerConnection extends GeneralConnection {
 				try {
 					temp = ((String) in.readObject()).split(" ");
 				} catch (Exception e) {
-					System.err.println("Falha ao receber");
+					System.err.println("Falha ao receber mensagem");
 					System.exit(1);
 				}
 			}
