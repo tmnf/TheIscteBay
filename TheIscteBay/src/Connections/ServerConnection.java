@@ -23,6 +23,7 @@ public class ServerConnection extends GeneralConnection {
 		String[] temp = ((String) aux).split(" ");
 
 		if (temp[0].equals("CLT")) {
+			tempList.clear();
 			while (!temp[0].equals("END")) {
 				System.out.println(temp[0] + " " + temp[1] + " " + temp[2] + " " + temp[3]); // So para teste em aula
 				tempList.add(new User(temp[1], Integer.parseInt(temp[2]), Integer.parseInt(temp[3])));

@@ -10,10 +10,13 @@ import User.User;
 
 public class Server {
 
+	// Ligações
 	private ServerSocket ss;
 
+	// Portas
 	private int serverPort;
 
+	// Utilizadores registados
 	private HashMap<Integer, User> users;
 
 	public Server(int serverPort) {

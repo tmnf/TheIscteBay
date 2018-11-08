@@ -10,7 +10,8 @@ import User.Client;
 public abstract class GeneralConnection extends Thread {
 
 	protected Client mainClient;
-	Socket so;
+
+	protected Socket so;
 
 	// Channels
 	protected ObjectInputStream in;
