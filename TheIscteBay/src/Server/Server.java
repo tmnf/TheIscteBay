@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Random;
 
-import Users.User;
+import User.User;
 
 public class Server {
 
@@ -24,7 +24,7 @@ public class Server {
 	public void startServer() {
 		try {
 			ss = new ServerSocket(serverPort);
-			System.out.println("Server iniciado" + ss);
+			System.out.println("Server iniciado: " + ss);
 			acceptClients();
 		} catch (Exception e) {
 			System.err.println("Erro ao inicializar servidor");
@@ -56,7 +56,7 @@ public class Server {
 		synchronized (users) {
 			users.remove(ID);
 		}
-		System.out.println("Cliente disconectou: " + ID);
+		System.out.println("Cliente disconectou: ID: " + ID);
 	}
 
 	public LinkedList<User> getUsersOnline() {

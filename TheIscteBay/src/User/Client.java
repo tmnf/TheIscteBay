@@ -1,10 +1,12 @@
-package Users;
+package User;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.util.LinkedList;
 
@@ -84,37 +86,39 @@ public class Client {
 	public void requestFileSearch(WordSearchMessage keyWord) { // Temp, para testing
 		requestClients();
 		System.out.println("A processar lista...");
-		while (!refreshed) {
+		while (!refreshed)
 			try {
 				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+			} catch (Exception e) {
 			}
-		}
-		if (usersOnline.size() > 1) // Se houver alguem online(Fora o proprio) enviar busca de ficheiro
+		System.out.println("Lista processada.");
+
+		if (usersOnline.size() > 1) // Se houver alguem online (Fora o proprio) enviar busca de ficheiro
 			sendFileInfoRequest(keyWord);
 		else
-			System.out.println("Nenhum utilizador online");
+			System.out.println("Nenhum outro utilizador online");
 	}
 
-	public void sendFileInfoRequest(WordSearchMessage keyWord) {
+	private void sendFileInfoRequest(WordSearchMessage keyWord) {
 		for (User x : usersOnline)
-			if (x.getPorto() != clientPort) { // Mudar para getAdress quando usado em diferentes computadores
+			if (x.getPorto() != clientPort) { // Mudar para getAdress quando usado em diferentes computadores e redes
 				connectToPeer(x.getEndereco(), x.getPorto());
 				peers.getLast().send(keyWord);
 			}
 	}
 
 	public void connectToPeer(String ip, int port) {
-		try {
-			Socket so = new Socket(ip, port);
-			System.out.println("Conexão establecida com " + so.getInetAddress());
-			PeerConnection temp = new PeerConnection(so, this);
-			temp.start();
-			peers.add(temp);
-		} catch (Exception e) {
-			System.err.println("Falha na conexão com o par");
-			System.exit(1);
+		synchronized (peers) {
+			try {
+				Socket so = new Socket(ip, port);
+				System.out.println("Conexão establecida com " + so.getInetAddress());
+				PeerConnection temp = new PeerConnection(so, this);
+				temp.start();
+				peers.add(temp);
+			} catch (Exception e) {
+				System.err.println("Falha na conexão com o par");
+				System.exit(1);
+			}
 		}
 	}
 
@@ -167,7 +171,6 @@ public class Client {
 			filesWithKeyWord[i] = new FileDetails(filesInFolder[i].getName(), fileContent.length);
 			i++;
 		}
-
 		return filesWithKeyWord;
 	}
 
@@ -184,7 +187,13 @@ public class Client {
 	}
 
 	public static void main(String[] args) {
-		new Client("192.168.1.75", 8080, 4041, "files"); // Usar args[0], args[1], args[2], args[3]
+		try {
+			new Client(InetAddress.getLocalHost().getHostAddress(), 8080, 4041, "files");
+			// Usar args[0], args[1], args[2],args[3] depois.
+			// Inet usado aqui para aceder ao ip local de servidor
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

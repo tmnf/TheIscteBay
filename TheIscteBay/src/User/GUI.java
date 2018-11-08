@@ -1,4 +1,4 @@
-package Users;
+package User;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
@@ -75,6 +76,13 @@ public class GUI {
 
 		JButton download = new JButton("Descarregar");
 		JProgressBar downProgress = new JProgressBar();
+
+		download.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JOptionPane.showMessageDialog(mainFrame, "Funcionalidade em progresso", "Not Avaible Yet", 1);
+			}
+		});
 
 		rightPanel.add(download);
 		rightPanel.add(downProgress);

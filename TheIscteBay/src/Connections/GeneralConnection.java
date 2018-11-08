@@ -5,11 +5,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-import Users.Client;
+import User.Client;
 
 public abstract class GeneralConnection extends Thread {
 
 	protected Client mainClient;
+	Socket so;
 
 	// Channels
 	protected ObjectInputStream in;
@@ -17,7 +18,7 @@ public abstract class GeneralConnection extends Thread {
 
 	public GeneralConnection(Socket so, Client client) throws IOException {
 		this.mainClient = client;
-
+		this.so = so;
 		out = new ObjectOutputStream(so.getOutputStream());
 		in = new ObjectInputStream(so.getInputStream());
 	}
@@ -37,7 +38,7 @@ public abstract class GeneralConnection extends Thread {
 				return;
 			}
 		}
-		System.out.println("Conexão terminada.");
+		System.out.println("Conexão terminada. Porta: " + so.getPort());
 	}
 
 	public void send(Object ob) {

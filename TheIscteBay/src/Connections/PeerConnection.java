@@ -5,7 +5,7 @@ import java.net.Socket;
 
 import SearchClasses.FileDetails;
 import SearchClasses.WordSearchMessage;
-import Users.Client;
+import User.Client;
 
 public class PeerConnection extends GeneralConnection {
 
