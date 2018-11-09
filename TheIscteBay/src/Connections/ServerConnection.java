@@ -28,7 +28,7 @@ public class ServerConnection extends GeneralConnection {
 				System.out.println(temp[0] + " " + temp[1] + " " + temp[2] + " " + temp[3]); // So para teste em aula
 				tempList.add(new User(temp[1], Integer.parseInt(temp[2]), Integer.parseInt(temp[3])));
 				try {
-					temp = ((String) in.readObject()).split(" ");
+					temp = inServer.readLine().split(" ");
 				} catch (Exception e) {
 					System.err.println("Falha ao receber mensagem");
 					System.exit(1);

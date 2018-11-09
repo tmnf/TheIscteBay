@@ -111,7 +111,7 @@ public class Client {
 		synchronized (peers) {
 			try {
 				Socket so = new Socket(ip, port);
-				System.out.println("Conexão establecida com " + so.getInetAddress());
+				System.out.println("Conexão establecida com " + so.getInetAddress().getHostAddress());
 				PeerConnection temp = new PeerConnection(so, this);
 				temp.start();
 				peers.add(temp);
@@ -141,7 +141,7 @@ public class Client {
 					while (true) {
 						try {
 							Socket so = ss.accept();
-							System.out.println("Par conectado: " + so.getInetAddress());
+							System.out.println("Par conectado: " + so.getInetAddress().getHostAddress());
 							new PeerConnection(so, Client.this).start();
 						} catch (IOException e) {
 							e.printStackTrace();
@@ -188,7 +188,7 @@ public class Client {
 
 	public static void main(String[] args) {
 		try {
-			new Client(InetAddress.getLocalHost().getHostAddress(), 8080, 4041, "files");
+			new Client(InetAddress.getLocalHost().getHostAddress(), 8080, 4042, "files");
 			// Usar args[0], args[1], args[2],args[3] depois.
 			// Inet usado aqui para aceder ao ip local de servidor
 		} catch (UnknownHostException e) {
