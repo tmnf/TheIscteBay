@@ -22,6 +22,15 @@ public class FileDetails implements Serializable {
 		return size;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		FileDetails temp = (FileDetails) obj;
+		if (fileName.equals(temp.getFileName()) && size == temp.getSize())
+			return true;
+		return false;
+	}
+
+	@Override
 	public String toString() {
 		return fileName + ", " + size + " bytes";
 	}

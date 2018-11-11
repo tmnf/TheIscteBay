@@ -1,14 +1,15 @@
 package Downloads;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 
+import Connections.PeerConnection;
 import SearchClasses.FileDetails;
 import User.Client;
-import User.User;
 
 public class RequestManager { // A implementar..
 
-	private HashMap<User, FileDetails[]> filesAvaible;
+	private ArrayList<FileDetails> filesAvaible;
+	private ArrayList<PeerConnection> usersProviding;
 
 	private Client client;
 
@@ -18,15 +19,20 @@ public class RequestManager { // A implementar..
 		this.client = client;
 		numberOfPeersSendingInfo = peersSendingInfo;
 
-		filesAvaible = new HashMap<>();
+		filesAvaible = new ArrayList<>();
+		usersProviding = new ArrayList<>();
 	}
 
-	public synchronized void manageRequestedFiles(User user, FileDetails[] files) {
+	public synchronized void manageRequestedFiles(FileDetails[] files, PeerConnection peer) {
 		numberOfPeersSendingInfo--;
 
 		if (files.length != 0) {
-			filesAvaible.put(user, files);
-		}
+			for (int i = 0; i != files.length; i++)
+				if (!filesAvaible.contains(files[i]))
+					filesAvaible.add(files[i]);
+			usersProviding.add(peer);
+		} else
+			peer.interrupt();
 
 		while (numberOfPeersSendingInfo != 0)
 			try {
@@ -35,6 +41,7 @@ public class RequestManager { // A implementar..
 				e.printStackTrace();
 			}
 
+		client.showOnGuiList(filesAvaible.toArray(new FileDetails[filesAvaible.size()]));
 	}
 
 }

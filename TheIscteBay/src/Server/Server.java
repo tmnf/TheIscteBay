@@ -2,7 +2,6 @@ package Server;
 
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -17,11 +16,11 @@ public class Server {
 	private int serverPort;
 
 	// Utilizadores registados
-	private HashMap<Integer, User> users;
+	private LinkedList<User> users;
 
 	public Server(int serverPort) {
 		this.serverPort = serverPort;
-		users = new HashMap<>();
+		users = new LinkedList<>();
 	}
 
 	public void startServer() {
@@ -50,29 +49,33 @@ public class Server {
 
 	public void registerUser(String adress, int port, int id) {
 		synchronized (users) {
-			users.put(id, new User(adress, port, id));
+			users.add(new User(adress, port, id));
 		}
 		System.out.println("Cliente registado. ID: " + id);
 	}
 
 	public void disconectUser(int ID) {
 		synchronized (users) {
-			users.remove(ID);
+			User aux = null;
+			for (User x : users)
+				if (x.getID() == ID)
+					aux = x;
+			users.remove(aux);
 		}
 		System.out.println("Cliente disconectou: ID: " + ID);
 	}
 
 	public LinkedList<User> getUsersOnline() {
-		LinkedList<User> temp = new LinkedList<>(users.values());
-		return temp;
+		return users;
 	}
 
 	private int generateRandomID() {
 		Random rnd = new Random();
 		int id = rnd.nextInt(999999999);
 
-		while (users.containsKey(id))
-			id = rnd.nextInt(999999999);
+		for (User x : users) // Criar ID unico
+			if (x.getID() == id)
+				id = rnd.nextInt(999999999);
 
 		return id;
 	}

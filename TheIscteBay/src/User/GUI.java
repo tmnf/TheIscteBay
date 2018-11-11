@@ -5,6 +5,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JList;
@@ -22,12 +23,13 @@ public class GUI {
 
 	private JFrame mainFrame;
 
-	private JList<FileDetails> list;
+	private DefaultListModel<FileDetails> files;
 
 	private Client client;
 
 	public GUI(Client client) {
 		this.client = client;
+		files = new DefaultListModel<>();
 
 		initWindow();
 		initComponents();
@@ -72,7 +74,7 @@ public class GUI {
 		JPanel rightPanel = new JPanel();
 		rightPanel.setLayout(new GridLayout(2, 1));
 
-		list = new JList<>();
+		JList<FileDetails> list = new JList<>(files);
 
 		JButton download = new JButton("Descarregar");
 		JProgressBar downProgress = new JProgressBar();
@@ -80,7 +82,7 @@ public class GUI {
 		download.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(mainFrame, "Funcionalidade em progresso", "Not Avaible Yet", 1);
+				client.sendDowloadRequest(list.getSelectedValue());
 			}
 		});
 
@@ -96,7 +98,9 @@ public class GUI {
 	}
 
 	public void showOnList(FileDetails[] list) {
-		this.list.setListData(list);
+		files.clear();
+		for (int i = 0; i != list.length; i++)
+			files.addElement(list[i]);
 	}
 
 	public void open() {

@@ -8,11 +8,15 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.LinkedList;
 
 import Connections.GeneralConnection;
 import Connections.PeerConnection;
 import Connections.ServerConnection;
+import Downloads.DownloadManager;
+import Downloads.RequestManager;
+import SearchClasses.FileBlockRequestMessage;
 import SearchClasses.FileDetails;
 import SearchClasses.WordSearchMessage;
 
@@ -34,6 +38,9 @@ public class Client {
 	// Lists
 	private LinkedList<User> usersOnline;
 	private LinkedList<PeerConnection> peers;
+
+	private RequestManager req;
+	public DownloadManager down;
 
 	private boolean refreshed; // Manter controlo sobre a resposta do servidor
 
@@ -100,19 +107,46 @@ public class Client {
 	}
 
 	private void sendFileInfoRequest(WordSearchMessage keyWord) {
+		req = new RequestManager(this, usersOnline.size() - 1);
 		for (User x : usersOnline)
 			if (x.getPorto() != clientPort) { // Mudar para getAdress quando usado em diferentes computadores e redes
-				connectToPeer(x.getEndereco(), x.getPorto());
+				connectToPeer(x.getEndereco(), x.getPorto(), x.getID());
 				peers.getLast().send(keyWord);
 			}
 	}
 
-	public void connectToPeer(String ip, int port) {
+	public void sendDowloadRequest(FileDetails file) {
+		int startingIndex = 0;
+		int numberOfBytes = DownloadManager.SIZEPART;
+		int i = -1;
+		while ((startingIndex + numberOfBytes) <= file.getSize()) {
+			i++;
+			if (i >= peers.size())
+				i = 0;
+			if (numberOfBytes > file.getSize())
+				numberOfBytes = file.getSize() - startingIndex;
+			peers.get(i).send(new FileBlockRequestMessage(file.getFileName(), startingIndex, numberOfBytes));
+			startingIndex += numberOfBytes;
+		}
+		down = new DownloadManager(peers.size(), file.getSize());
+		down.start();
+	}
+
+	public byte[] getFilePart(FileBlockRequestMessage temp) throws IOException { // Devolve a parte do
+																					// ficheiro
+		byte[] file = Files.readAllBytes(Paths.get(filePath + "/" + temp.getFileName()));
+		byte[] filePart = new byte[temp.getNumberOfBytes()];
+		for (int i = 0, aux = temp.getStartingIndex(); i != temp.getNumberOfBytes(); i++, aux++)
+			filePart[i] = file[aux];
+		return filePart;
+	}
+
+	public void connectToPeer(String ip, int port, int id) {
 		synchronized (peers) {
 			try {
 				Socket so = new Socket(ip, port);
 				System.out.println("Conexão establecida com " + so.getInetAddress().getHostAddress());
-				PeerConnection temp = new PeerConnection(so, this);
+				PeerConnection temp = new PeerConnection(so, this, req);
 				temp.start();
 				peers.add(temp);
 			} catch (Exception e) {
@@ -142,7 +176,7 @@ public class Client {
 						try {
 							Socket so = ss.accept();
 							System.out.println("Par conectado: " + so.getInetAddress().getHostAddress());
-							new PeerConnection(so, Client.this).start();
+							new PeerConnection(so, Client.this, req).start();
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
@@ -165,12 +199,11 @@ public class Client {
 
 		FileDetails[] filesWithKeyWord = new FileDetails[filesInFolder.length];
 
-		int i = 0;
-		while (i != filesInFolder.length) {
+		for (int i = 0; i != filesInFolder.length; i++) {
 			byte[] fileContent = Files.readAllBytes(filesInFolder[i].toPath());
 			filesWithKeyWord[i] = new FileDetails(filesInFolder[i].getName(), fileContent.length);
-			i++;
 		}
+
 		return filesWithKeyWord;
 	}
 
@@ -184,6 +217,10 @@ public class Client {
 
 	public int getClientPort() {
 		return clientPort;
+	}
+
+	public int getPeers() {
+		return peers.size();
 	}
 
 	public static void main(String[] args) {
