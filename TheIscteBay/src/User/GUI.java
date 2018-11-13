@@ -9,7 +9,6 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
@@ -17,7 +16,6 @@ import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
 import SearchClasses.FileDetails;
-import SearchClasses.WordSearchMessage;
 
 public class GUI {
 
@@ -61,7 +59,7 @@ public class GUI {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (!searchField.getText().isEmpty())
-					client.requestFileSearch(new WordSearchMessage(searchField.getText()));
+					client.requestFileSearch(searchField.getText());
 			}
 		});
 

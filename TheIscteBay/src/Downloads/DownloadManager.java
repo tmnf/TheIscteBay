@@ -7,7 +7,7 @@ import java.nio.file.Paths;
 import Connections.PeerConnection;
 import SearchClasses.FileBlockRequestMessage;
 
-public class DownloadManager extends Thread { // A implementar...
+public class DownloadManager extends Thread {
 
 	public static final int SIZEPART = 1024;
 	public static final String path = "files/final.png";
@@ -17,7 +17,6 @@ public class DownloadManager extends Thread { // A implementar...
 	private int numberOfPeersStillUploading;
 
 	public DownloadManager(int peersUploading, int fileSize) {
-		System.out.println(peersUploading);
 		numberOfPeersStillUploading = peersUploading;
 		fileDowloading = new byte[fileSize];
 	}
@@ -33,7 +32,7 @@ public class DownloadManager extends Thread { // A implementar...
 			}
 		}
 
-		saveFile();
+		saveFile(); // Salvar arquivo
 	}
 
 	public synchronized void downloadWait(byte[] filePart, FileBlockRequestMessage info, PeerConnection peer) {

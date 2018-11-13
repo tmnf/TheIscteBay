@@ -11,14 +11,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.LinkedList;
 
+import Connections.ConnectionToPeer;
 import Connections.GeneralConnection;
-import Connections.PeerConnection;
+import Connections.PeerConnected;
 import Connections.ServerConnection;
 import Downloads.DownloadManager;
-import Downloads.RequestManager;
 import SearchClasses.FileBlockRequestMessage;
 import SearchClasses.FileDetails;
-import SearchClasses.WordSearchMessage;
 
 public class Client {
 
@@ -37,10 +36,7 @@ public class Client {
 
 	// Lists
 	private LinkedList<User> usersOnline;
-	private LinkedList<PeerConnection> peers;
-
-	private RequestManager req;
-	public DownloadManager down;
+	private LinkedList<ConnectionToPeer> peersWaitingRequests;
 
 	private boolean refreshed; // Manter controlo sobre a resposta do servidor
 
@@ -51,7 +47,7 @@ public class Client {
 		this.filePath = filePath;
 
 		usersOnline = new LinkedList<>();
-		peers = new LinkedList<>();
+		peersWaitingRequests = new LinkedList<>();
 
 		connectToDirectory();
 		startOwnServerSocket();
@@ -90,7 +86,7 @@ public class Client {
 
 	// LIGAÇÕES COM UM PAR
 
-	public void requestFileSearch(WordSearchMessage keyWord) { // Temp, para testing
+	public void requestFileSearch(String keyWord) {
 		requestClients();
 		System.out.println("A processar lista...");
 		while (!refreshed)
@@ -106,12 +102,11 @@ public class Client {
 			System.out.println("Nenhum outro utilizador online");
 	}
 
-	private void sendFileInfoRequest(WordSearchMessage keyWord) {
-		req = new RequestManager(this, usersOnline.size() - 1);
+	private void sendFileInfoRequest(String keyWord) {
 		for (User x : usersOnline)
 			if (x.getPorto() != clientPort) { // Mudar para getAdress quando usado em diferentes computadores e redes
 				connectToPeer(x.getEndereco(), x.getPorto(), x.getID());
-				peers.getLast().send(keyWord);
+				peersWaitingRequests.getLast().sendFileInfoRequest(keyWord);
 			}
 	}
 
@@ -121,19 +116,17 @@ public class Client {
 		int i = -1;
 		while ((startingIndex + numberOfBytes) <= file.getSize()) {
 			i++;
-			if (i >= peers.size())
+			if (i >= peersWaitingRequests.size())
 				i = 0;
 			if (numberOfBytes > file.getSize())
 				numberOfBytes = file.getSize() - startingIndex;
-			peers.get(i).send(new FileBlockRequestMessage(file.getFileName(), startingIndex, numberOfBytes));
+			peersWaitingRequests.get(i).sendFilePartRequest(file.getFileName(), startingIndex, numberOfBytes);
+
 			startingIndex += numberOfBytes;
 		}
-		down = new DownloadManager(peers.size(), file.getSize());
-		down.start();
 	}
 
-	public byte[] getFilePart(FileBlockRequestMessage temp) throws IOException { // Devolve a parte do
-																					// ficheiro
+	public byte[] getFilePart(FileBlockRequestMessage temp) throws IOException { // Devolve parte do ficheiro
 		byte[] file = Files.readAllBytes(Paths.get(filePath + "/" + temp.getFileName()));
 		byte[] filePart = new byte[temp.getNumberOfBytes()];
 		for (int i = 0, aux = temp.getStartingIndex(); i != temp.getNumberOfBytes(); i++, aux++)
@@ -142,13 +135,13 @@ public class Client {
 	}
 
 	public void connectToPeer(String ip, int port, int id) {
-		synchronized (peers) {
+		synchronized (peersWaitingRequests) {
 			try {
 				Socket so = new Socket(ip, port);
 				System.out.println("Conexão establecida com " + so.getInetAddress().getHostAddress());
-				PeerConnection temp = new PeerConnection(so, this, req);
+				ConnectionToPeer temp = new ConnectionToPeer(so, this);
 				temp.start();
-				peers.add(temp);
+				peersWaitingRequests.add(temp);
 			} catch (Exception e) {
 				System.err.println("Falha na conexão com o par");
 				System.exit(1);
@@ -157,8 +150,8 @@ public class Client {
 	}
 
 	public void disconectPeer(GeneralConnection peer_Client) {
-		synchronized (peers) {
-			peers.remove(peer_Client);
+		synchronized (peersWaitingRequests) {
+			peersWaitingRequests.remove(peer_Client);
 		}
 	}
 
@@ -176,7 +169,7 @@ public class Client {
 						try {
 							Socket so = ss.accept();
 							System.out.println("Par conectado: " + so.getInetAddress().getHostAddress());
-							new PeerConnection(so, Client.this, req).start();
+							new PeerConnected(so, Client.this).start();
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
@@ -220,7 +213,7 @@ public class Client {
 	}
 
 	public int getPeers() {
-		return peers.size();
+		return peersWaitingRequests.size();
 	}
 
 	public static void main(String[] args) {

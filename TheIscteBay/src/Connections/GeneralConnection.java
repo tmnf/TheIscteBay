@@ -17,10 +17,10 @@ public abstract class GeneralConnection extends Thread {
 		startChannels();
 	}
 
-	public abstract void startChannels() throws IOException;
+	protected abstract void startChannels() throws IOException;
 
-	public abstract void dealWith(Object aux) throws IOException;
+	protected abstract void dealWith(Object aux) throws IOException;
 
-	public abstract void send(Object ob);
+	protected abstract void send(Object ob);
 
 }
