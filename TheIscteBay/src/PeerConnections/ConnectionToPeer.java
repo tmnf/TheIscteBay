@@ -1,8 +1,10 @@
-package Connections;
+package PeerConnections;
 
 import java.io.IOException;
 import java.net.Socket;
 
+import Connections.PeerConnection;
+import Downloads.DownloadManager;
 import SearchClasses.FileBlockRequestMessage;
 import SearchClasses.FileDetails;
 import SearchClasses.UploadedPart;
@@ -10,6 +12,8 @@ import SearchClasses.WordSearchMessage;
 import User.Client;
 
 public class ConnectionToPeer extends PeerConnection {
+
+	private DownloadManager downManager;
 
 	public ConnectionToPeer(Socket so, Client client) throws IOException {
 		super(so, client);
@@ -30,11 +34,7 @@ public class ConnectionToPeer extends PeerConnection {
 	}
 
 	private void handleFilePartReceived(UploadedPart filePartReceived) {
-		try {
-//			downloadManager.downloadWait(filePartReceived.getFilePart(), filePartReceived.getPartInfo(), this);
-		} catch (Exception e) {
-			System.err.println("Erro a receber a parte do ficheiro");
-		}
+		downManager.receiveFilePart(filePartReceived, this);
 	}
 
 	// Outcome Methods
@@ -43,8 +43,9 @@ public class ConnectionToPeer extends PeerConnection {
 		send(new WordSearchMessage(keyWord));
 	}
 
-	public void sendFilePartRequest(String name, int startIndex, int size) {
+	public void sendFilePartRequest(String name, int startIndex, int size, DownloadManager downManager) {
 		send(new FileBlockRequestMessage(name, startIndex, size));
+		this.downManager = downManager;
 	}
 
 }

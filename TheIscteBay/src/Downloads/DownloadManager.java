@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 
 import Connections.PeerConnection;
 import SearchClasses.FileBlockRequestMessage;
+import SearchClasses.UploadedPart;
 
 public class DownloadManager extends Thread {
 
@@ -16,8 +17,7 @@ public class DownloadManager extends Thread {
 
 	private int numberOfPeersStillUploading;
 
-	public DownloadManager(int peersUploading, int fileSize) {
-		numberOfPeersStillUploading = peersUploading;
+	public DownloadManager(int fileSize) {
 		fileDowloading = new byte[fileSize];
 	}
 
@@ -35,8 +35,11 @@ public class DownloadManager extends Thread {
 		saveFile(); // Salvar arquivo
 	}
 
-	public synchronized void downloadWait(byte[] filePart, FileBlockRequestMessage info, PeerConnection peer) {
+	public synchronized void receiveFilePart(UploadedPart filePartReceived, PeerConnection peer) {
 		numberOfPeersStillUploading--;
+
+		byte[] filePart = filePartReceived.getFilePart();
+		FileBlockRequestMessage info = filePartReceived.getPartInfo();
 
 		for (int i = info.getStartingIndex(), aux = 0; i != info.getNumberOfBytes(); i++, aux++) {
 			fileDowloading[i] = filePart[aux];
@@ -56,6 +59,10 @@ public class DownloadManager extends Thread {
 		}
 
 		System.out.println("Ficheiro recebido");
+	}
+
+	public synchronized void addPeerUploading() {
+		numberOfPeersStillUploading++;
 	}
 
 }

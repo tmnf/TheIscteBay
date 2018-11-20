@@ -1,47 +1,31 @@
 package Downloads;
 
-import java.util.ArrayList;
+import java.io.IOException;
 
-import Connections.PeerConnection;
-import SearchClasses.FileDetails;
-import User.Client;
+import PeerConnections.PeerConnected;
+import SearchClasses.FileBlockRequestMessage;
 
-public class RequestManager { // A implementar..
+public class RequestManager {
 
-	private ArrayList<FileDetails> filesAvaible;
-	private ArrayList<PeerConnection> usersProviding;
+	public static final int MAX_REQUESTS = 5;
 
-	private Client client;
+	private int currentRequests;
 
-	private int numberOfPeersSendingInfo;
-
-	public RequestManager(Client client, int peersSendingInfo) {
-		this.client = client;
-		numberOfPeersSendingInfo = peersSendingInfo;
-
-		filesAvaible = new ArrayList<>();
-		usersProviding = new ArrayList<>();
-	}
-
-	public synchronized void manageRequestedFiles(FileDetails[] files, PeerConnection peer) {
-		numberOfPeersSendingInfo--;
-
-		if (files.length != 0) {
-			for (int i = 0; i != files.length; i++)
-				if (!filesAvaible.contains(files[i]))
-					filesAvaible.add(files[i]);
-			usersProviding.add(peer);
-		} else
-			peer.interrupt();
-
-		while (numberOfPeersSendingInfo != 0)
+	public synchronized void addRequest(FileBlockRequestMessage request, PeerConnected peer) throws IOException {
+		while (currentRequests == MAX_REQUESTS)
 			try {
 				wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 
-		client.showOnGuiList(filesAvaible.toArray(new FileDetails[filesAvaible.size()]));
+		currentRequests++;
+		peer.sendFilePartRequested(request);
+	}
+
+	public synchronized void closeRequest() {
+		currentRequests--;
+		notify();
 	}
 
 }

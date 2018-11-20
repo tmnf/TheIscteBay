@@ -11,11 +11,12 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.LinkedList;
 
-import Connections.ConnectionToPeer;
 import Connections.GeneralConnection;
-import Connections.PeerConnected;
 import Connections.ServerConnection;
 import Downloads.DownloadManager;
+import Downloads.RequestManager;
+import PeerConnections.ConnectionToPeer;
+import PeerConnections.PeerConnected;
 import SearchClasses.FileBlockRequestMessage;
 import SearchClasses.FileDetails;
 
@@ -38,6 +39,9 @@ public class Client {
 	private LinkedList<User> usersOnline;
 	private LinkedList<ConnectionToPeer> peersWaitingRequests;
 
+	// Managers
+	private RequestManager requestManager;
+
 	private boolean refreshed; // Manter controlo sobre a resposta do servidor
 
 	public Client(String serverIp, int serverPort, int clientPort, String filePath) {
@@ -46,6 +50,7 @@ public class Client {
 		this.clientPort = clientPort;
 		this.filePath = filePath;
 
+		requestManager = new RequestManager();
 		usersOnline = new LinkedList<>();
 		peersWaitingRequests = new LinkedList<>();
 
@@ -89,11 +94,13 @@ public class Client {
 	public void requestFileSearch(String keyWord) {
 		requestClients();
 		System.out.println("A processar lista...");
+
 		while (!refreshed)
 			try {
 				Thread.sleep(100);
 			} catch (Exception e) {
 			}
+
 		System.out.println("Lista processada.");
 
 		if (usersOnline.size() > 1) // Se houver alguem online (Fora o proprio) enviar busca de ficheiro
@@ -111,19 +118,27 @@ public class Client {
 	}
 
 	public void sendDowloadRequest(FileDetails file) {
+		DownloadManager downManager = new DownloadManager(file.getSize());
+
 		int startingIndex = 0;
 		int numberOfBytes = DownloadManager.SIZEPART;
-		int i = -1;
+
+		int i = 0;
 		while ((startingIndex + numberOfBytes) <= file.getSize()) {
-			i++;
 			if (i >= peersWaitingRequests.size())
 				i = 0;
+
 			if (numberOfBytes > file.getSize())
 				numberOfBytes = file.getSize() - startingIndex;
-			peersWaitingRequests.get(i).sendFilePartRequest(file.getFileName(), startingIndex, numberOfBytes);
+
+			peersWaitingRequests.get(i).sendFilePartRequest(file.getFileName(), startingIndex, numberOfBytes,
+					downManager);
+			downManager.addPeerUploading();
 
 			startingIndex += numberOfBytes;
+			i++;
 		}
+		downManager.start(); // Iniciar
 	}
 
 	public byte[] getFilePart(FileBlockRequestMessage temp) throws IOException { // Devolve parte do ficheiro
@@ -169,7 +184,7 @@ public class Client {
 						try {
 							Socket so = ss.accept();
 							System.out.println("Par conectado: " + so.getInetAddress().getHostAddress());
-							new PeerConnected(so, Client.this).start();
+							new PeerConnected(so, Client.this, requestManager).start();
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
@@ -218,7 +233,7 @@ public class Client {
 
 	public static void main(String[] args) {
 		try {
-			new Client(InetAddress.getLocalHost().getHostAddress(), 8080, 4042, "files");
+			new Client(InetAddress.getLocalHost().getHostAddress(), 8080, 4043, "files");
 			// Usar args[0], args[1], args[2],args[3] depois.
 			// Inet usado aqui para aceder ao ip local de servidor
 		} catch (UnknownHostException e) {
