@@ -1,6 +1,8 @@
-package SearchClasses;
+package HandlerClasses;
 
 import java.io.Serializable;
+
+import SearchClasses.FileBlockRequestMessage;
 
 public class UploadedPart implements Serializable {
 

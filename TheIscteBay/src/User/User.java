@@ -27,6 +27,18 @@ public class User implements Serializable {
 		return ID;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		User aux = (User) obj;
+		return (aux.getID() == ID && obj instanceof User);
+	}
+
+	@Override
+	public int hashCode() {
+		return ID;
+	}
+
+	@Override
 	public String toString() {
 		return ip + " " + port + " " + ID;
 	}

@@ -5,18 +5,25 @@ import java.net.Socket;
 
 import Connections.PeerConnection;
 import Downloads.DownloadManager;
+import Downloads.FileInfoHandler;
+import HandlerClasses.UploadedPart;
 import SearchClasses.FileBlockRequestMessage;
 import SearchClasses.FileDetails;
-import SearchClasses.UploadedPart;
 import SearchClasses.WordSearchMessage;
 import User.Client;
+import User.User;
 
 public class ConnectionToPeer extends PeerConnection {
 
+	// Managers
 	private DownloadManager downManager;
+	private FileInfoHandler fileInfoHandler;
 
-	public ConnectionToPeer(Socket so, Client client) throws IOException {
+	private User user;
+
+	public ConnectionToPeer(Socket so, Client client, User user) throws IOException {
 		super(so, client);
+		this.user = user;
 	}
 
 	@Override
@@ -30,22 +37,28 @@ public class ConnectionToPeer extends PeerConnection {
 	// Income Handle Methods
 
 	private void handleFileInfoReceived(FileDetails[] files) {
-//		requestManager.manageRequestedFiles(files, this); Arranjar isto
+		fileInfoHandler.handleFileInfo(files, user);
 	}
 
 	private void handleFilePartReceived(UploadedPart filePartReceived) {
-		downManager.receiveFilePart(filePartReceived, this);
+		downManager.receiveFilePart(filePartReceived, user);
 	}
 
 	// Outcome Methods
 
-	public void sendFileInfoRequest(String keyWord) {
+	public void sendFileInfoRequest(String keyWord, FileInfoHandler fileInfoHandler) {
+		this.fileInfoHandler = fileInfoHandler;
 		send(new WordSearchMessage(keyWord));
 	}
 
 	public void sendFilePartRequest(String name, int startIndex, int size, DownloadManager downManager) {
-		send(new FileBlockRequestMessage(name, startIndex, size));
 		this.downManager = downManager;
+		send(new FileBlockRequestMessage(name, startIndex, size));
+	}
+
+	// Getters
+	public User getUser() {
+		return user;
 	}
 
 }

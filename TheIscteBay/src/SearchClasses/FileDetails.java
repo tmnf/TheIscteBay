@@ -30,9 +30,4 @@ public class FileDetails implements Serializable {
 		return false;
 	}
 
-	@Override
-	public String toString() {
-		return fileName + ", " + size + " bytes";
-	}
-
 }

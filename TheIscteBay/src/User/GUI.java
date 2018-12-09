@@ -15,13 +15,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
-import SearchClasses.FileDetails;
+import HandlerClasses.FileInfo;
 
 public class GUI {
 
 	private JFrame mainFrame;
 
-	private DefaultListModel<FileDetails> files;
+	private DefaultListModel<FileInfo> files;
 
 	private Client client;
 
@@ -72,7 +72,7 @@ public class GUI {
 		JPanel rightPanel = new JPanel();
 		rightPanel.setLayout(new GridLayout(2, 1));
 
-		JList<FileDetails> list = new JList<>(files);
+		JList<FileInfo> list = new JList<>(files);
 
 		JButton download = new JButton("Descarregar");
 		JProgressBar downProgress = new JProgressBar();
@@ -81,6 +81,7 @@ public class GUI {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				client.sendDowloadRequest(list.getSelectedValue());
+				System.out.println(list.getSelectedValue().getPeersWithFile().size());
 			}
 		});
 
@@ -95,7 +96,7 @@ public class GUI {
 		mainFrame.add(bottPanel, BorderLayout.SOUTH);
 	}
 
-	public void showOnList(FileDetails[] list) {
+	public void showOnList(FileInfo[] list) {
 		files.clear();
 		for (int i = 0; i != list.length; i++)
 			files.addElement(list[i]);

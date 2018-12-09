@@ -1,23 +1,20 @@
 package User;
 
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.LinkedList;
 
-import Connections.GeneralConnection;
 import Connections.ServerConnection;
 import Downloads.DownloadManager;
-import Downloads.RequestManager;
+import Downloads.DownloadRequestManager;
+import Downloads.FileInfoHandler;
+import HandlerClasses.FileInfo;
 import PeerConnections.ConnectionToPeer;
 import PeerConnections.PeerConnected;
-import SearchClasses.FileBlockRequestMessage;
 import SearchClasses.FileDetails;
 
 public class Client {
@@ -37,10 +34,9 @@ public class Client {
 
 	// Lists
 	private LinkedList<User> usersOnline;
-	private LinkedList<ConnectionToPeer> peersWaitingRequests;
 
 	// Managers
-	private RequestManager requestManager;
+	private DownloadRequestManager requestManager;
 
 	private boolean refreshed; // Manter controlo sobre a resposta do servidor
 
@@ -50,9 +46,8 @@ public class Client {
 		this.clientPort = clientPort;
 		this.filePath = filePath;
 
-		requestManager = new RequestManager();
+		requestManager = new DownloadRequestManager();
 		usersOnline = new LinkedList<>();
-		peersWaitingRequests = new LinkedList<>();
 
 		connectToDirectory();
 		startOwnServerSocket();
@@ -82,23 +77,25 @@ public class Client {
 		refreshed = false;
 	}
 
-	public void refreshPeersOnline(LinkedList<User> usersOnlineInfo) {
+	public synchronized void refreshPeersOnline(LinkedList<User> usersOnlineInfo) {
 		usersOnline.clear();
 		for (User x : usersOnlineInfo)
 			usersOnline.add(x);
 		refreshed = true;
+		notify();
 	}
 
 	// LIGAÇÕES COM UM PAR
 
-	public void requestFileSearch(String keyWord) {
+	public synchronized void requestFileSearch(String keyWord) {
 		requestClients();
 		System.out.println("A processar lista...");
 
 		while (!refreshed)
 			try {
-				Thread.sleep(100);
+				wait();
 			} catch (Exception e) {
+				e.printStackTrace();
 			}
 
 		System.out.println("Lista processada.");
@@ -110,63 +107,58 @@ public class Client {
 	}
 
 	private void sendFileInfoRequest(String keyWord) {
+		FileInfoHandler fileInfoHandler = new FileInfoHandler(usersOnline.size() - 1, this);
+		fileInfoHandler.start();
+
 		for (User x : usersOnline)
-			if (x.getPorto() != clientPort) { // Mudar para getAdress quando usado em diferentes computadores e redes
-				connectToPeer(x.getEndereco(), x.getPorto(), x.getID());
-				peersWaitingRequests.getLast().sendFileInfoRequest(keyWord);
+			if (x.getPorto() != clientPort) { // Mudar isto
+				ConnectionToPeer peer = connectToPeer(x.getEndereco(), x.getPorto(), x.getID());
+				peer.sendFileInfoRequest(keyWord, fileInfoHandler);
 			}
 	}
 
-	public void sendDowloadRequest(FileDetails file) {
-		DownloadManager downManager = new DownloadManager(file.getSize());
+	public void sendDowloadRequest(FileInfo file) {
+
+		FileDetails fileDetails = file.getFileDetails();
+		ArrayList<User> usersWithFile = file.getPeersWithFile();
+
+		DownloadManager downManager = new DownloadManager(fileDetails.getSize());
 
 		int startingIndex = 0;
-		int numberOfBytes = DownloadManager.SIZEPART;
+		int numberOfBytes = fileDetails.getSize();
 
 		int i = 0;
-		while ((startingIndex + numberOfBytes) <= file.getSize()) {
-			if (i >= peersWaitingRequests.size())
+		while (startingIndex < fileDetails.getSize()) {
+			if (i >= usersWithFile.size())
 				i = 0;
 
-			if (numberOfBytes > file.getSize())
-				numberOfBytes = file.getSize() - startingIndex;
+			if (startingIndex + numberOfBytes > fileDetails.getSize())
+				numberOfBytes = fileDetails.getSize() - startingIndex;
 
-			peersWaitingRequests.get(i).sendFilePartRequest(file.getFileName(), startingIndex, numberOfBytes,
-					downManager);
-			downManager.addPeerUploading();
+			ConnectionToPeer peer = connectToPeerWithFile(usersWithFile.get(i));
+			peer.sendFilePartRequest(fileDetails.getFileName(), startingIndex, numberOfBytes, downManager);
 
 			startingIndex += numberOfBytes;
 			i++;
 		}
-		downManager.start(); // Iniciar
+		downManager.start();
 	}
 
-	public byte[] getFilePart(FileBlockRequestMessage temp) throws IOException { // Devolve parte do ficheiro
-		byte[] file = Files.readAllBytes(Paths.get(filePath + "/" + temp.getFileName()));
-		byte[] filePart = new byte[temp.getNumberOfBytes()];
-		for (int i = 0, aux = temp.getStartingIndex(); i != temp.getNumberOfBytes(); i++, aux++)
-			filePart[i] = file[aux];
-		return filePart;
+	private ConnectionToPeer connectToPeerWithFile(User x) {
+		return connectToPeer(x.getEndereco(), x.getPorto(), x.getID());
 	}
 
-	public void connectToPeer(String ip, int port, int id) {
-		synchronized (peersWaitingRequests) {
-			try {
-				Socket so = new Socket(ip, port);
-				System.out.println("Conexão establecida com " + so.getInetAddress().getHostAddress());
-				ConnectionToPeer temp = new ConnectionToPeer(so, this);
-				temp.start();
-				peersWaitingRequests.add(temp);
-			} catch (Exception e) {
-				System.err.println("Falha na conexão com o par");
-				System.exit(1);
-			}
-		}
-	}
-
-	public void disconectPeer(GeneralConnection peer_Client) {
-		synchronized (peersWaitingRequests) {
-			peersWaitingRequests.remove(peer_Client);
+	public ConnectionToPeer connectToPeer(String ip, int port, int id) {
+		ConnectionToPeer temp = null;
+		try {
+			Socket so = new Socket(ip, port);
+			System.out.println("Conexão establecida com " + so.getInetAddress().getHostAddress());
+			temp = new ConnectionToPeer(so, this, new User(ip, port, id));
+			temp.start();
+			return temp;
+		} catch (Exception e) {
+			System.err.println("Falha na conexão com o par");
+			return temp;
 		}
 	}
 
@@ -197,27 +189,9 @@ public class Client {
 		}
 	}
 
-	public FileDetails[] getFilesWithName(String fileName) throws IOException {
-		File[] filesInFolder = new File(filePath).listFiles(new FilenameFilter() {
-			@Override
-			public boolean accept(File dir, String name) {
-				return name.contains(fileName);
-			}
-		});
-
-		FileDetails[] filesWithKeyWord = new FileDetails[filesInFolder.length];
-
-		for (int i = 0; i != filesInFolder.length; i++) {
-			byte[] fileContent = Files.readAllBytes(filesInFolder[i].toPath());
-			filesWithKeyWord[i] = new FileDetails(filesInFolder[i].getName(), fileContent.length);
-		}
-
-		return filesWithKeyWord;
-	}
-
 	// METODOS GUI
 
-	public void showOnGuiList(FileDetails[] list) { // A funcionar so para uma thread ainda
+	public void showOnGuiList(FileInfo[] list) {
 		gui.showOnList(list);
 	}
 
@@ -227,13 +201,13 @@ public class Client {
 		return clientPort;
 	}
 
-	public int getPeers() {
-		return peersWaitingRequests.size();
+	public String getPath() {
+		return filePath;
 	}
 
 	public static void main(String[] args) {
 		try {
-			new Client(InetAddress.getLocalHost().getHostAddress(), 8080, 4043, "files");
+			new Client(InetAddress.getLocalHost().getHostAddress(), 8080, 4042, "files");
 			// Usar args[0], args[1], args[2],args[3] depois.
 			// Inet usado aqui para aceder ao ip local de servidor
 		} catch (UnknownHostException e) {

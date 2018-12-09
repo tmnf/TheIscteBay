@@ -4,17 +4,20 @@ import java.io.IOException;
 import java.net.Socket;
 
 import Connections.PeerConnection;
-import Downloads.RequestManager;
+import Downloads.DownloadRequestManager;
+import HandlerClasses.RequestInfo;
+import HandlerClasses.UploadedPart;
 import SearchClasses.FileBlockRequestMessage;
-import SearchClasses.UploadedPart;
+import SearchClasses.FileDetails;
 import SearchClasses.WordSearchMessage;
 import User.Client;
+import Utils.Utils;
 
 public class PeerConnected extends PeerConnection {
 
-	private RequestManager requestManager;
+	private DownloadRequestManager requestManager;
 
-	public PeerConnected(Socket so, Client client, RequestManager requestManager) throws IOException {
+	public PeerConnected(Socket so, Client client, DownloadRequestManager requestManager) throws IOException {
 		super(so, client);
 
 		this.requestManager = requestManager;
@@ -23,17 +26,20 @@ public class PeerConnected extends PeerConnection {
 	@Override
 	public void dealWith(Object aux) throws IOException {
 		if (aux instanceof WordSearchMessage) // Enviar lista de ficheiros com o nome desejado
-			sendFilesInFolder(aux.toString());
+			sendFilesInFolder(((WordSearchMessage) aux).toString());
 		else if (aux instanceof FileBlockRequestMessage) // Enviar parte do ficheiro desejado
-			requestManager.addRequest((FileBlockRequestMessage) aux, this);
+			requestManager.addRequest(new RequestInfo((FileBlockRequestMessage) aux, this));
 	}
 
 	public void sendFilesInFolder(String fileName) throws IOException {
-		send(mainClient.getFilesWithName(fileName));
+		FileDetails[] file = Utils.getFilesWithName(mainClient.getPath(), fileName);
+		send(file);
 	}
 
 	public void sendFilePartRequested(FileBlockRequestMessage partToDowload) throws IOException {
-		send(new UploadedPart(mainClient.getFilePart(partToDowload), partToDowload));
+		byte[] filePart = Utils.getFilePart(partToDowload, mainClient.getPath());
+
+		send(new UploadedPart(filePart, partToDowload));
 		requestManager.closeRequest(); // Após enviar ficheiro desocupa a fila
 	}
 

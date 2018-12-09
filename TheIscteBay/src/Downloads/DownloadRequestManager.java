@@ -2,17 +2,17 @@ package Downloads;
 
 import java.io.IOException;
 
+import HandlerClasses.RequestInfo;
 import PeerConnections.PeerConnected;
-import SearchClasses.FileBlockRequestMessage;
 
-public class RequestManager {
+public class DownloadRequestManager {
 
 	public static final int MAX_REQUESTS = 5;
 
 	private int currentRequests;
 
-	public synchronized void addRequest(FileBlockRequestMessage request, PeerConnected peer) throws IOException {
-		while (currentRequests == MAX_REQUESTS)
+	public synchronized void addRequest(RequestInfo requestInfo) throws IOException {
+		while (currentRequests >= MAX_REQUESTS)
 			try {
 				wait();
 			} catch (InterruptedException e) {
@@ -20,7 +20,9 @@ public class RequestManager {
 			}
 
 		currentRequests++;
-		peer.sendFilePartRequested(request);
+
+		PeerConnected peerRequesting = requestInfo.getPeer();
+		peerRequesting.sendFilePartRequested(requestInfo.getFileInfo());
 	}
 
 	public synchronized void closeRequest() {
