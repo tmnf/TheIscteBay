@@ -3,6 +3,7 @@ package Downloads;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,7 +11,9 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import HandlerClasses.UploadedPart;
+import PeerConnections.ConnectionToPeer;
 import SearchClasses.FileBlockRequestMessage;
+import User.GUI;
 import User.User;
 
 public class DownloadManager extends Thread {
@@ -25,7 +28,16 @@ public class DownloadManager extends Thread {
 
 	private HashMap<User, Integer> uploaders;
 
-	public DownloadManager(int fileSize) {
+	private GUI gui;
+
+	private ArrayList<ConnectionToPeer> peersWithFile;
+
+	public DownloadManager(int fileSize, GUI gui, ArrayList<ConnectionToPeer> peersWithFile) {
+		this.gui = gui;
+		this.peersWithFile = peersWithFile;
+
+		gui.startProgressBar(fileSize);
+
 		fileDowloading = new byte[fileSize];
 		startTime = System.currentTimeMillis();
 
@@ -42,6 +54,7 @@ public class DownloadManager extends Thread {
 			}
 		}
 
+		closePeers();
 		saveFile(); // Salvar arquivo
 	}
 
@@ -63,6 +76,8 @@ public class DownloadManager extends Thread {
 		for (int i = start, aux = 0; i < finish; i++, aux++) {
 			fileDowloading[i] = filePart[aux];
 		}
+
+		gui.progressOnBar(currentSize);
 
 		notify();
 	}
@@ -92,6 +107,11 @@ public class DownloadManager extends Thread {
 			log += "Tempo decorrido: " + timeSpent + "ms";
 
 		JOptionPane.showMessageDialog(new JFrame(), log, "Download Concluído", 1);
+	}
+
+	private void closePeers() {
+		for (ConnectionToPeer x : peersWithFile)
+			x.interrupt();
 	}
 
 }

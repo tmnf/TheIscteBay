@@ -19,6 +19,7 @@ public class ConnectionToPeer extends PeerConnection {
 	private DownloadManager downManager;
 	private FileInfoHandler fileInfoHandler;
 
+	// User Info
 	private User user;
 
 	public ConnectionToPeer(Socket so, Client client, User user) throws IOException {
@@ -38,6 +39,7 @@ public class ConnectionToPeer extends PeerConnection {
 
 	private void handleFileInfoReceived(FileDetails[] files) {
 		fileInfoHandler.handleFileInfo(files, user);
+		interrupt();
 	}
 
 	private void handleFilePartReceived(UploadedPart filePartReceived) {
@@ -60,5 +62,4 @@ public class ConnectionToPeer extends PeerConnection {
 	public User getUser() {
 		return user;
 	}
-
 }

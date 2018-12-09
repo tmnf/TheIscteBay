@@ -23,6 +23,9 @@ public class GUI {
 
 	private DefaultListModel<FileInfo> files;
 
+	private JProgressBar downProgress;
+	private JButton download;
+
 	private Client client;
 
 	public GUI(Client client) {
@@ -74,14 +77,17 @@ public class GUI {
 
 		JList<FileInfo> list = new JList<>(files);
 
-		JButton download = new JButton("Descarregar");
-		JProgressBar downProgress = new JProgressBar();
+		download = new JButton("Descarregar");
+		downProgress = new JProgressBar();
+		downProgress.setStringPainted(true);
+		downProgress.setMinimum(0);
+		downProgress.setValue(0);
 
 		download.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				client.sendDowloadRequest(list.getSelectedValue());
-				System.out.println(list.getSelectedValue().getPeersWithFile().size());
+				if (list.getSelectedValue() != null)
+					client.sendDowloadRequest(list.getSelectedValue());
 			}
 		});
 
@@ -100,6 +106,20 @@ public class GUI {
 		files.clear();
 		for (int i = 0; i != list.length; i++)
 			files.addElement(list[i]);
+	}
+
+	public void startProgressBar(int maximum) {
+		downProgress.setMaximum(maximum);
+		download.setEnabled(false);
+	}
+
+	public void progressOnBar(int value) {
+		downProgress.setValue(value);
+
+		if (value == downProgress.getMaximum()) {
+			download.setEnabled(true);
+			downProgress.setValue(0);
+		}
 	}
 
 	public void open() {

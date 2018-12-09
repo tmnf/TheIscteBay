@@ -120,23 +120,23 @@ public class Client {
 	public void sendDowloadRequest(FileInfo file) {
 
 		FileDetails fileDetails = file.getFileDetails();
-		ArrayList<User> usersWithFile = file.getPeersWithFile();
 
-		DownloadManager downManager = new DownloadManager(fileDetails.getSize());
+		ArrayList<ConnectionToPeer> peersWithFile = connectToPeerWithFile(file.getPeersWithFile());
+		DownloadManager downManager = new DownloadManager(fileDetails.getSize(), gui, peersWithFile);
 
 		int startingIndex = 0;
-		int numberOfBytes = fileDetails.getSize();
+		int numberOfBytes = DownloadManager.SIZEPART;
 
 		int i = 0;
 		while (startingIndex < fileDetails.getSize()) {
-			if (i >= usersWithFile.size())
+			if (i >= peersWithFile.size())
 				i = 0;
 
 			if (startingIndex + numberOfBytes > fileDetails.getSize())
 				numberOfBytes = fileDetails.getSize() - startingIndex;
 
-			ConnectionToPeer peer = connectToPeerWithFile(usersWithFile.get(i));
-			peer.sendFilePartRequest(fileDetails.getFileName(), startingIndex, numberOfBytes, downManager);
+			peersWithFile.get(i).sendFilePartRequest(fileDetails.getFileName(), startingIndex, numberOfBytes,
+					downManager);
 
 			startingIndex += numberOfBytes;
 			i++;
@@ -144,11 +144,14 @@ public class Client {
 		downManager.start();
 	}
 
-	private ConnectionToPeer connectToPeerWithFile(User x) {
-		return connectToPeer(x.getEndereco(), x.getPorto(), x.getID());
+	private ArrayList<ConnectionToPeer> connectToPeerWithFile(ArrayList<User> users) {
+		ArrayList<ConnectionToPeer> peers = new ArrayList<>();
+		for (User x : users)
+			peers.add(connectToPeer(x.getEndereco(), x.getPorto(), x.getID()));
+		return peers;
 	}
 
-	public ConnectionToPeer connectToPeer(String ip, int port, int id) {
+	private ConnectionToPeer connectToPeer(String ip, int port, int id) {
 		ConnectionToPeer temp = null;
 		try {
 			Socket so = new Socket(ip, port);
@@ -207,7 +210,7 @@ public class Client {
 
 	public static void main(String[] args) {
 		try {
-			new Client(InetAddress.getLocalHost().getHostAddress(), 8080, 4042, "files");
+			new Client(InetAddress.getLocalHost().getHostAddress(), 8080, 4026, "files");
 			// Usar args[0], args[1], args[2],args[3] depois.
 			// Inet usado aqui para aceder ao ip local de servidor
 		} catch (UnknownHostException e) {

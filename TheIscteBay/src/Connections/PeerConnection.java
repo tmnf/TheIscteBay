@@ -25,14 +25,15 @@ public abstract class PeerConnection extends GeneralConnection {
 
 	@Override
 	public void run() {
-		try {
-			Object aux = in.readObject();
-			dealWith(aux);
-			so.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		System.out.println("Conexão terminada. Adress: " + so.getInetAddress());
+		while (!interrupted())
+			try {
+				Object aux = in.readObject();
+				dealWith(aux);
+			} catch (Exception e) {
+				break;
+			}
+		closeSocket();
+		System.out.println("Conexão terminada. Adress: " + so.getInetAddress() + ", Porto: " + so.getPort());
 	}
 
 	@Override
@@ -41,6 +42,14 @@ public abstract class PeerConnection extends GeneralConnection {
 			out.writeObject(ob);
 		} catch (Exception e) {
 			System.out.println("Erro ao enviar objeto");
+		}
+	}
+
+	private void closeSocket() {
+		try {
+			so.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 }
