@@ -5,7 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-import User.Client;
+import Client.Client;
 
 public abstract class PeerConnection extends GeneralConnection {
 
@@ -30,7 +30,7 @@ public abstract class PeerConnection extends GeneralConnection {
 				Object aux = in.readObject();
 				dealWith(aux);
 			} catch (Exception e) {
-				break;
+				interrupt();
 			}
 		closeSocket();
 		System.out.println("Conexão terminada. Adress: " + so.getInetAddress() + ", Porto: " + so.getPort());
@@ -45,6 +45,7 @@ public abstract class PeerConnection extends GeneralConnection {
 		}
 	}
 
+	/* Closes socket */
 	private void closeSocket() {
 		try {
 			so.close();

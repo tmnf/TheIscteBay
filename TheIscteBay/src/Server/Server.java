@@ -5,17 +5,17 @@ import java.net.Socket;
 import java.util.LinkedList;
 import java.util.Random;
 
-import User.User;
+import Client.User;
 
 public class Server {
 
-	// Ligações
+	// Sockets
 	private ServerSocket ss;
 
-	// Portas
+	// Ports
 	private int serverPort;
 
-	// Utilizadores registados
+	// Registered Users
 	private LinkedList<User> users;
 
 	public Server(int serverPort) {
@@ -23,6 +23,7 @@ public class Server {
 		users = new LinkedList<>();
 	}
 
+	/* Starts directory server */
 	public void startServer() {
 		try {
 			ss = new ServerSocket(serverPort);
@@ -34,6 +35,7 @@ public class Server {
 		}
 	}
 
+	/* Keeps on listening for new connections */
 	private synchronized void acceptClients() {
 		System.out.println("À espera de conexões...");
 		while (true) {
@@ -47,6 +49,7 @@ public class Server {
 		}
 	}
 
+	/* Registers user on directory */
 	public void registerUser(String adress, int port, int id) {
 		synchronized (users) {
 			users.add(new User(adress, port, id));
@@ -54,6 +57,7 @@ public class Server {
 		System.out.println("Cliente registado. ID: " + id);
 	}
 
+	/* Removes user from directory */
 	public void disconectUser(int ID) {
 		synchronized (users) {
 			User aux = null;
@@ -65,10 +69,12 @@ public class Server {
 		System.out.println("Cliente disconectou: ID: " + ID);
 	}
 
+	/* Returns users online list */
 	public LinkedList<User> getUsersOnline() {
 		return users;
 	}
 
+	/* Generates unique ID to each user */
 	private int generateRandomID() {
 		Random rnd = new Random();
 		int id = rnd.nextInt(999999999);
@@ -78,11 +84,6 @@ public class Server {
 				id = rnd.nextInt(999999999);
 
 		return id;
-	}
-
-	public static void main(String[] args) {
-		Server server = new Server(8080); // Usar args[0]
-		server.startServer();
 	}
 
 }

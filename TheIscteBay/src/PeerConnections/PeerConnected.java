@@ -3,18 +3,19 @@ package PeerConnections;
 import java.io.IOException;
 import java.net.Socket;
 
+import Client.Client;
 import Connections.PeerConnection;
-import Downloads.DownloadRequestManager;
-import HandlerClasses.RequestInfo;
-import HandlerClasses.UploadedPart;
-import SearchClasses.FileBlockRequestMessage;
-import SearchClasses.FileDetails;
-import SearchClasses.WordSearchMessage;
-import User.Client;
+import Handlers.DownloadRequestManager;
+import InfoCarriers.RequestInfo;
+import InfoCarriers.UploadedPart;
+import PeerObjects.FileBlockRequestMessage;
+import PeerObjects.FileDetails;
+import PeerObjects.WordSearchMessage;
 import Utils.Utils;
 
 public class PeerConnected extends PeerConnection {
 
+	// Request Manger
 	private DownloadRequestManager requestManager;
 
 	public PeerConnected(Socket so, Client client, DownloadRequestManager requestManager) throws IOException {
@@ -30,6 +31,8 @@ public class PeerConnected extends PeerConnection {
 		else if (aux instanceof FileBlockRequestMessage) // Enviar parte do ficheiro desejado
 			requestManager.addRequest(new RequestInfo((FileBlockRequestMessage) aux, this));
 	}
+
+	/* Outcome Methods */
 
 	public void sendFilesInFolder(String fileName) throws IOException {
 		FileDetails[] file = Utils.getFilesWithName(mainClient.getPath(), fileName);

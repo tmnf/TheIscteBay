@@ -8,15 +8,18 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-import User.User;
+import Client.User;
 
 public class ClientHandler extends Thread {
 
+	// Directory
 	private Server server;
 
+	// Directory Channels
 	private BufferedReader in;
 	private PrintWriter out;
 
+	// Connection ID
 	private int ID;
 
 	public ClientHandler(Socket so, Server server, int ID) {

@@ -11,8 +11,8 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
 
-import User.Client;
-import User.User;
+import Client.Client;
+import Client.User;
 
 public class ServerConnection extends GeneralConnection {
 
@@ -20,6 +20,7 @@ public class ServerConnection extends GeneralConnection {
 	private BufferedReader inServer;
 	private PrintWriter outServer;
 
+	// Lists
 	private LinkedList<User> tempList;
 
 	public ServerConnection(Socket so, Client client) throws IOException {
@@ -67,6 +68,7 @@ public class ServerConnection extends GeneralConnection {
 		}
 	}
 
+	/* Registers client on Directory */
 	public void registerOnServer() {
 		try {
 			String insc = "INSC " + InetAddress.getLocalHost().getHostAddress() + " " + mainClient.getClientPort();
@@ -77,6 +79,7 @@ public class ServerConnection extends GeneralConnection {
 		}
 	}
 
+	/* Sends a request message to directory */
 	public void requestClients() {
 		send("CLT");
 	}

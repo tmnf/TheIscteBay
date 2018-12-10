@@ -6,12 +6,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import SearchClasses.FileBlockRequestMessage;
-import SearchClasses.FileDetails;
+import PeerObjects.FileBlockRequestMessage;
+import PeerObjects.FileDetails;
 
 public class Utils {
 
-	// Devolve ficheiros com o nome desejado presentes na pasta do utilizador
+	/*
+	 * Returns existing files that contains a certain keyword in user's file folder
+	 */
+
 	public static FileDetails[] getFilesWithName(String filePath, String fileName) throws IOException {
 		File[] filesInFolder = new File(filePath).listFiles(new FilenameFilter() {
 			@Override
@@ -30,7 +33,8 @@ public class Utils {
 		return filesWithKeyWord;
 	}
 
-	// Devolve parte do ficheiro
+	/* Returns part of a file */
+
 	public static byte[] getFilePart(FileBlockRequestMessage temp, String filePath) throws IOException {
 		byte[] file = Files.readAllBytes(Paths.get(filePath + "/" + temp.getFileName()));
 		byte[] filePart = new byte[temp.getNumberOfBytes()];

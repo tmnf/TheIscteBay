@@ -3,15 +3,15 @@ package PeerConnections;
 import java.io.IOException;
 import java.net.Socket;
 
+import Client.Client;
+import Client.User;
 import Connections.PeerConnection;
-import Downloads.DownloadManager;
-import Downloads.FileInfoHandler;
-import HandlerClasses.UploadedPart;
-import SearchClasses.FileBlockRequestMessage;
-import SearchClasses.FileDetails;
-import SearchClasses.WordSearchMessage;
-import User.Client;
-import User.User;
+import Handlers.DownloadManager;
+import Handlers.FileInfoHandler;
+import InfoCarriers.UploadedPart;
+import PeerObjects.FileBlockRequestMessage;
+import PeerObjects.FileDetails;
+import PeerObjects.WordSearchMessage;
 
 public class ConnectionToPeer extends PeerConnection {
 
@@ -35,7 +35,7 @@ public class ConnectionToPeer extends PeerConnection {
 			handleFilePartReceived((UploadedPart) aux);
 	}
 
-	// Income Handle Methods
+	/* Income Handle Methods */
 
 	private void handleFileInfoReceived(FileDetails[] files) {
 		fileInfoHandler.handleFileInfo(files, user);
@@ -44,18 +44,27 @@ public class ConnectionToPeer extends PeerConnection {
 
 	private void handleFilePartReceived(UploadedPart filePartReceived) {
 		downManager.receiveFilePart(filePartReceived, user);
+		sendRequestIfAvaible();
 	}
 
-	// Outcome Methods
+	/* Outcome Methods */
 
 	public void sendFileInfoRequest(String keyWord, FileInfoHandler fileInfoHandler) {
 		this.fileInfoHandler = fileInfoHandler;
 		send(new WordSearchMessage(keyWord));
 	}
 
-	public void sendFilePartRequest(String name, int startIndex, int size, DownloadManager downManager) {
+	public void sendFileRequest(DownloadManager downManager) {
 		this.downManager = downManager;
-		send(new FileBlockRequestMessage(name, startIndex, size));
+		sendRequestIfAvaible();
+	}
+
+	private void sendRequestIfAvaible() {
+		FileBlockRequestMessage aux = mainClient.getRequest();
+		if (aux != null)
+			send(aux);
+		else
+			interrupt();
 	}
 
 	// Getters
