@@ -7,7 +7,7 @@ import Client.Client;
 import Connections.PeerConnection;
 import Handlers.DownloadRequestManager;
 import InfoCarriers.RequestInfo;
-import InfoCarriers.UploadedPart;
+import InfoCarriers.FilePart;
 import PeerObjects.FileBlockRequestMessage;
 import PeerObjects.FileDetails;
 import PeerObjects.WordSearchMessage;
@@ -42,7 +42,7 @@ public class PeerConnected extends PeerConnection {
 	public void sendFilePartRequested(FileBlockRequestMessage partToDowload) throws IOException {
 		byte[] filePart = Utils.getFilePart(partToDowload, mainClient.getPath());
 
-		send(new UploadedPart(filePart, partToDowload));
+		send(new FilePart(filePart, partToDowload));
 		requestManager.closeRequest(); // Após enviar ficheiro desocupa a fila
 	}
 

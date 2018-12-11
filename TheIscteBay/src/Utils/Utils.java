@@ -37,8 +37,8 @@ public class Utils {
 
 	public static byte[] getFilePart(FileBlockRequestMessage temp, String filePath) throws IOException {
 		byte[] file = Files.readAllBytes(Paths.get(filePath + "/" + temp.getFileName()));
-		byte[] filePart = new byte[temp.getNumberOfBytes()];
-		for (int i = 0, aux = temp.getStartingIndex(); i != temp.getNumberOfBytes(); i++, aux++)
+		byte[] filePart = new byte[temp.getLenght()];
+		for (int i = 0, aux = temp.getOffset(); i != temp.getLenght(); i++, aux++)
 			filePart[i] = file[aux];
 		return filePart;
 	}

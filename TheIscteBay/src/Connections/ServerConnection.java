@@ -19,11 +19,11 @@ public class ServerConnection extends GeneralConnection {
 	private PrintWriter outServer;
 
 	// Lists
-	private LinkedList<User> tempList;
+	private LinkedList<User> currentOnline;
 
 	public ServerConnection(Socket so, Client client) throws IOException {
 		super(so, client);
-		tempList = new LinkedList<>();
+		currentOnline = new LinkedList<>();
 		registerOnServer();
 	}
 
@@ -50,20 +50,24 @@ public class ServerConnection extends GeneralConnection {
 	public void dealWith(Object aux) throws IOException {
 		String[] temp = ((String) aux).split(" ");
 
-		if (temp[0].equals("CLT")) {
-			tempList.clear();
-			while (!temp[0].equals("END")) {
-				System.out.println(temp[0] + " " + temp[1] + " " + temp[2] + " " + temp[3]); // So para teste em aula
-				tempList.add(new User(temp[1], Integer.parseInt(temp[2]), Integer.parseInt(temp[3])));
-				try {
-					temp = inServer.readLine().split(" ");
-				} catch (Exception e) {
-					System.err.println("Falha ao receber mensagem");
-					System.exit(1);
-				}
+		if (temp[0].equals("CLT"))
+			receiveActiveUsers(temp);
+
+	}
+
+	/* Receives users currently online */
+	private void receiveActiveUsers(String[] temp) {
+		currentOnline.clear();
+		while (!temp[0].equals("END")) {
+			System.out.println(temp[0] + " " + temp[1] + " " + temp[2] + " " + temp[3]); // So para teste em aula
+			currentOnline.add(new User(temp[1], Integer.parseInt(temp[2]), Integer.parseInt(temp[3])));
+			try {
+				temp = inServer.readLine().split(" ");
+			} catch (Exception e) {
+				System.err.println("Falha ao receber mensagem");
 			}
-			mainClient.refreshPeersOnline(tempList);
 		}
+		mainClient.refreshPeersOnline(currentOnline);
 	}
 
 	/* Registers client on Directory */

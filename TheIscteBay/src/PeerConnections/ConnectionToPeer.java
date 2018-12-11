@@ -8,7 +8,7 @@ import Client.User;
 import Connections.PeerConnection;
 import Handlers.DownloadManager;
 import Handlers.FileInfoHandler;
-import InfoCarriers.UploadedPart;
+import InfoCarriers.FilePart;
 import PeerObjects.FileBlockRequestMessage;
 import PeerObjects.FileDetails;
 import PeerObjects.WordSearchMessage;
@@ -31,8 +31,8 @@ public class ConnectionToPeer extends PeerConnection {
 	public void dealWith(Object aux) throws IOException {
 		if (aux instanceof FileDetails[]) // Recebe a lista de ficheiros com a palavra-chave desejada
 			handleFileInfoReceived((FileDetails[]) aux);
-		else if (aux instanceof UploadedPart) // Recebe parte do ficheiro pedido
-			handleFilePartReceived((UploadedPart) aux);
+		else if (aux instanceof FilePart) // Recebe parte do ficheiro pedido
+			handleFilePartReceived((FilePart) aux);
 	}
 
 	/* Income Handle Methods */
@@ -42,7 +42,7 @@ public class ConnectionToPeer extends PeerConnection {
 		interrupt();
 	}
 
-	private void handleFilePartReceived(UploadedPart filePartReceived) {
+	private void handleFilePartReceived(FilePart filePartReceived) {
 		downManager.receiveFilePart(filePartReceived, user);
 		sendRequestIfAvaible();
 	}

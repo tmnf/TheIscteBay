@@ -11,7 +11,7 @@ import javax.swing.JOptionPane;
 
 import Client.GUI;
 import Client.User;
-import InfoCarriers.UploadedPart;
+import InfoCarriers.FilePart;
 import PeerObjects.FileBlockRequestMessage;
 
 public class DownloadManager extends Thread {
@@ -61,7 +61,7 @@ public class DownloadManager extends Thread {
 	}
 
 	/* Receives file part and mounts it, updating GUI */
-	public synchronized void receiveFilePart(UploadedPart filePartReceived, User user) {
+	public synchronized void receiveFilePart(FilePart filePartReceived, User user) {
 
 		if (uploaders.containsKey(user))
 			uploaders.put(user, uploaders.get(user) + 1);
@@ -73,8 +73,8 @@ public class DownloadManager extends Thread {
 
 		currentSize += filePart.length;
 
-		int start = info.getStartingIndex();
-		int finish = start + info.getNumberOfBytes();
+		int start = info.getOffset();
+		int finish = start + info.getLenght();
 
 		for (int i = start, aux = 0; i < finish; i++, aux++) {
 			fileDowloading[i] = filePart[aux];

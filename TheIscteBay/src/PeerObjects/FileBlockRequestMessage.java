@@ -10,20 +10,20 @@ public class FileBlockRequestMessage implements Serializable {
 	private String fileName;
 
 	// File's byte array starting index and number of bytes
-	private int startingIndex, numberOfBytes;
+	private int offset, lenght;
 
 	public FileBlockRequestMessage(String fileName, int startingIndex, int numberOfBytes) {
 		this.fileName = fileName;
-		this.startingIndex = startingIndex;
-		this.numberOfBytes = numberOfBytes;
+		this.offset = startingIndex;
+		this.lenght = numberOfBytes;
 	}
 
-	public int getStartingIndex() {
-		return startingIndex;
+	public int getOffset() {
+		return offset;
 	}
 
-	public int getNumberOfBytes() {
-		return numberOfBytes;
+	public int getLenght() {
+		return lenght;
 	}
 
 	public String getFileName() {
