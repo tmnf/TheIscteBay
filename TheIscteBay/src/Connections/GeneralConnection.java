@@ -10,7 +10,7 @@ public abstract class GeneralConnection extends Thread {
 	// Main Client
 	protected Client mainClient;
 
-	// Sockets dsd
+	// Sockets
 	protected Socket so;
 
 	public GeneralConnection(Socket so, Client client) throws IOException {
