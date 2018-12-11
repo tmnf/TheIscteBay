@@ -1,8 +1,10 @@
 package Client;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -108,10 +110,12 @@ public class Client {
 
 		System.out.println("Lista processada.");
 
+		gui.clearList();
 		if (usersOnline.size() > 1)
 			sendFileInfoRequest(keyWord);
 		else
 			System.out.println("Nenhum outro utilizador online");
+
 	}
 
 	/* Sends a file info request to all users online */
@@ -120,7 +124,7 @@ public class Client {
 		fileInfoHandler.start();
 
 		for (User x : usersOnline)
-			if (x.getPorto() != clientPort) { // Mudar isto
+			if (x.getPorto() != clientPort || !x.getEndereco().equals(getClientAddress())) {
 				ConnectionToPeer peer = ConnectionsUtils.connectToPeer(x.getEndereco(), x.getPorto(), x.getID(), this);
 				peer.sendFileInfoRequest(keyWord, fileInfoHandler);
 			}
@@ -208,6 +212,17 @@ public class Client {
 	/* Returns file folder path */
 	public String getPath() {
 		return filePath;
+	}
+
+	/* Returns Local IP Address */
+	public String getClientAddress() {
+		String address = "";
+		try {
+			address = InetAddress.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e) {
+			System.err.println("Erro ao obter endreço local");
+		}
+		return address;
 	}
 
 	/* Returns and removes a part of a file */

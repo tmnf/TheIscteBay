@@ -6,9 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.LinkedList;
 
 import Client.Client;
@@ -70,13 +68,8 @@ public class ServerConnection extends GeneralConnection {
 
 	/* Registers client on Directory */
 	public void registerOnServer() {
-		try {
-			String insc = "INSC " + InetAddress.getLocalHost().getHostAddress() + " " + mainClient.getClientPort();
-			send(insc);
-		} catch (UnknownHostException e) {
-			System.err.println("Erro ao registar no servidor");
-			System.exit(1);
-		}
+		String insc = "INSC " + mainClient.getClientAddress() + " " + mainClient.getClientPort();
+		send(insc);
 	}
 
 	/* Sends a request message to directory */

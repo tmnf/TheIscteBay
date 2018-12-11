@@ -110,9 +110,13 @@ public class GUI {
 
 	/* Shows list on GUI */
 	public void showOnList(FileInfo[] list) {
-		files.clear();
+		clearList();
 		for (int i = 0; i != list.length; i++)
 			files.addElement(list[i]);
+	}
+
+	public void clearList() {
+		files.clear();
 	}
 
 	/* Starts Download Progress Bar with a certain maximum */
