@@ -46,4 +46,9 @@ public class PeerConnected extends PeerConnection {
 		requestManager.closeRequest(); // Após enviar ficheiro desocupa a fila
 	}
 
+	@Override
+	protected void handleInterruption() {
+		interrupt();
+	}
+
 }

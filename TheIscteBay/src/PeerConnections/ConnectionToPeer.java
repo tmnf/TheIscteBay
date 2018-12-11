@@ -22,6 +22,9 @@ public class ConnectionToPeer extends PeerConnection {
 	// User Info
 	private User user;
 
+	// Download
+	private FileBlockRequestMessage currentDownload;
+
 	public ConnectionToPeer(Socket so, Client client, User user) throws IOException {
 		super(so, client);
 		this.user = user;
@@ -44,6 +47,7 @@ public class ConnectionToPeer extends PeerConnection {
 
 	private void handleFilePartReceived(FilePart filePartReceived) {
 		downManager.receiveFilePart(filePartReceived, user);
+		currentDownload = null;
 		sendRequestIfAvaible();
 	}
 
@@ -60,9 +64,9 @@ public class ConnectionToPeer extends PeerConnection {
 	}
 
 	private void sendRequestIfAvaible() {
-		FileBlockRequestMessage aux = mainClient.getRequest();
-		if (aux != null)
-			send(aux);
+		currentDownload = mainClient.getRequest();
+		if (currentDownload != null)
+			send(currentDownload);
 		else
 			interrupt();
 	}
@@ -70,5 +74,12 @@ public class ConnectionToPeer extends PeerConnection {
 	// Getters
 	public User getUser() {
 		return user;
+	}
+
+	@Override
+	protected void handleInterruption() {
+		if (currentDownload != null)
+			System.out.println("Avisar o cliente");
+		interrupt();
 	}
 }

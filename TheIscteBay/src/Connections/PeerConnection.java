@@ -30,7 +30,7 @@ public abstract class PeerConnection extends GeneralConnection {
 				Object aux = in.readObject();
 				dealWith(aux);
 			} catch (Exception e) {
-				interrupt();
+				handleInterruption();
 			}
 		closeSocket();
 		System.out.println("Conexão terminada. Adress: " + so.getInetAddress() + ", Porto: " + so.getPort());
@@ -53,4 +53,7 @@ public abstract class PeerConnection extends GeneralConnection {
 			e.printStackTrace();
 		}
 	}
+
+	/* Forces all inheriting classes to handle the exception differently */
+	protected abstract void handleInterruption();
 }
