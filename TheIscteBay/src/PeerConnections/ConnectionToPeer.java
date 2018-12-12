@@ -79,7 +79,7 @@ public class ConnectionToPeer extends PeerConnection {
 	@Override
 	protected void handleInterruption() {
 		if (currentDownload != null)
-			System.out.println("Avisar o cliente");
+			System.out.println("Avisar o cliente"); // INCLUIR METODO PARA LIDAR COM PARTES ABANDONADAS!!! 
 		interrupt();
 	}
 }
