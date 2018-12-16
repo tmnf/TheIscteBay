@@ -25,9 +25,11 @@ public class Utils {
 
 		FileDetails[] filesWithKeyWord = new FileDetails[filesInFolder.length];
 
-		for (int i = 0; i != filesInFolder.length; i++) {
-			byte[] fileContent = Files.readAllBytes(filesInFolder[i].toPath());
-			filesWithKeyWord[i] = new FileDetails(filesInFolder[i].getName(), fileContent.length);
+		int i = 0;
+		for (File x : filesInFolder) {
+			byte[] fileContent = Files.readAllBytes(x.toPath());
+			filesWithKeyWord[i] = new FileDetails(x.getName(), fileContent.length);
+			i++;
 		}
 
 		return filesWithKeyWord;
@@ -38,8 +40,10 @@ public class Utils {
 	public static byte[] getFilePart(FileBlockRequestMessage temp, String filePath) throws IOException {
 		byte[] file = Files.readAllBytes(Paths.get(filePath + "/" + temp.getFileName()));
 		byte[] filePart = new byte[temp.getLenght()];
+
 		for (int i = 0, aux = temp.getOffset(); i != temp.getLenght(); i++, aux++)
 			filePart[i] = file[aux];
+
 		return filePart;
 	}
 

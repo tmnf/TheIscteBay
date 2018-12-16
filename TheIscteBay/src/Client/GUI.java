@@ -1,6 +1,7 @@
 package Client;
 
 import java.awt.BorderLayout;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -104,6 +105,14 @@ public class GUI {
 		bottPanel.add(rightPanel, BorderLayout.EAST);
 		// =======================================================\\
 
+		Font arial = new Font("Arial", 1, 14);
+
+		txt.setFont(arial);
+		searchField.setFont(arial);
+		searchButton.setFont(arial);
+		download.setFont(arial);
+		downProgress.setFont(arial);
+
 		mainFrame.add(topPanel, BorderLayout.NORTH);
 		mainFrame.add(bottPanel, BorderLayout.SOUTH);
 	}
@@ -115,6 +124,7 @@ public class GUI {
 			files.addElement(list[i]);
 	}
 
+	/* Clears file list on user interface */
 	public void clearList() {
 		files.clear();
 	}
