@@ -2,6 +2,8 @@ package PeerConnections;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import Client.Client;
 import Connections.PeerConnection;
@@ -39,11 +41,30 @@ public class PeerConnected extends PeerConnection {
 		send(file);
 	}
 
-	public void sendFilePartRequested(FileBlockRequestMessage partToDowload) throws IOException {
-		byte[] filePart = Utils.getFilePart(partToDowload, mainClient.getPath());
+	public void sendFilePartRequested(FileBlockRequestMessage uploadPartInfo) throws IOException {
+		byte[] filePart = Utils.getFilePart(uploadPartInfo, mainClient.getPath());
 
-		send(new FilePart(filePart, partToDowload));
-		requestManager.closeRequest(); // Após enviar ficheiro desocupa a fila
+		Timer timeOut = startTimeOutTimer();
+		send(new FilePart(filePart, uploadPartInfo));
+
+		requestManager.closeRequest();
+		timeOut.cancel();
+	}
+
+	/* Checks if the client takes more than 10s to send a part */
+	private Timer startTimeOutTimer() {
+		Timer timer = new Timer();
+
+		int timeOutTime = 10000;
+
+		timer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				handleInterruption();
+			}
+		}, timeOutTime);
+
+		return timer;
 	}
 
 	@Override

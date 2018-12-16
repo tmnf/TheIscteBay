@@ -142,4 +142,12 @@ public class GUI {
 		mainFrame.setVisible(true);
 	}
 
+	/* Updates number of peers connected shown on interface */
+	public void updatePeers(int usersUploading, int total, boolean downloading) {
+		if (downloading)
+			mainFrame.setTitle("TheIscteBay - Peers(" + usersUploading + "/" + total + ")");
+		else
+			mainFrame.setTitle("TheIscteBay");
+	}
+
 }

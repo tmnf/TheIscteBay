@@ -134,9 +134,9 @@ public class Client {
 	public void sendDowloadRequest(FileInfo file) {
 		FileDetails fileDetails = file.getFileDetails();
 
-		String path = filePath + "/(TESTE)" + fileDetails.getFileName(); // ALTERARRRR
+		String path = filePath + "/" + fileDetails.getFileName();
 
-		DownloadManager downManager = new DownloadManager(fileDetails.getSize(), gui, path);
+		DownloadManager downManager = new DownloadManager(fileDetails.getSize(), this, path, file.getPeersWithFile());
 		downManager.start();
 
 		generateFilePartsNeeded(fileDetails);
@@ -160,7 +160,7 @@ public class Client {
 	}
 
 	/* Connects with a peer that has a certain file */
-	private void connectToPeersWithFile(ArrayList<User> users, DownloadManager downManager) {
+	public void connectToPeersWithFile(ArrayList<User> users, DownloadManager downManager) {
 		for (User x : users) {
 			ConnectionToPeer peer = ConnectionsUtils.connectToPeer(x.getEndereco(), x.getPorto(), x.getID(), this);
 			peer.sendFileRequest(downManager);
@@ -225,10 +225,22 @@ public class Client {
 		return address;
 	}
 
-	/* Returns and removes a part of a file */
+	/* Returns user interface */
+	public GUI getGui() {
+		return gui;
+	}
+
+	/* Returns and removes a part of the file part request list */
 	public FileBlockRequestMessage getRequest() {
-		synchronized (filePath) {
+		synchronized (fileParts) {
 			return fileParts.pollFirst();
+		}
+	}
+
+	/* Adds a lost part request to the list */
+	public void addRequest(FileBlockRequestMessage request) {
+		synchronized (fileParts) {
+			fileParts.add(request);
 		}
 	}
 

@@ -67,8 +67,10 @@ public class ConnectionToPeer extends PeerConnection {
 		currentDownload = mainClient.getRequest();
 		if (currentDownload != null)
 			send(currentDownload);
-		else
+		else {
 			interrupt();
+			downManager.disconnectUser();
+		}
 	}
 
 	// Getters
@@ -79,7 +81,13 @@ public class ConnectionToPeer extends PeerConnection {
 	@Override
 	protected void handleInterruption() {
 		if (currentDownload != null)
-			System.out.println("Avisar o cliente"); // INCLUIR METODO PARA LIDAR COM PARTES ABANDONADAS!!! 
+			notifyBadUploader();
 		interrupt();
+	}
+
+	// Notifies the system that this uploader had a problem
+	private void notifyBadUploader() {
+		mainClient.addRequest(currentDownload);
+		downManager.notifyBadUploader(user);
 	}
 }

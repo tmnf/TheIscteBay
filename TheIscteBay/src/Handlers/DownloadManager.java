@@ -3,12 +3,14 @@ package Handlers;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+import Client.Client;
 import Client.GUI;
 import Client.User;
 import InfoCarriers.FilePart;
@@ -32,15 +34,24 @@ public class DownloadManager extends Thread {
 	// Peers Uploading File
 	private HashMap<User, Integer> uploaders;
 
+	// Users with file info
+	private ArrayList<User> usersWithFile;
+	private int usersUploading;
+
 	// GUI
 	private GUI gui;
 
-	public DownloadManager(int fileSize, GUI gui, String path) {
-		this.gui = gui;
+	// Client
+	private Client client;
+
+	public DownloadManager(int fileSize, Client client, String path, ArrayList<User> usersWithFile) {
+		this.gui = client.getGui();
 		this.path = path;
+		this.usersWithFile = usersWithFile;
 
 		gui.startProgressBar(fileSize);
 
+		usersUploading = usersWithFile.size();
 		fileDowloading = new byte[fileSize];
 		startTime = System.currentTimeMillis();
 
@@ -50,14 +61,26 @@ public class DownloadManager extends Thread {
 	@Override
 	public synchronized void run() {
 		while (currentSize != fileDowloading.length) {
+			if (usersUploading == 0)
+				requestLastParts();
+
 			try {
 				wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+
+			gui.updatePeers(usersUploading, usersWithFile.size(), true);
 		}
 
 		saveFile();
+		gui.updatePeers(0, 0, false);
+	}
+
+	/* Requests the lost parts to good uploaders */
+	private void requestLastParts() {
+		usersUploading = usersWithFile.size();
+		client.connectToPeersWithFile(usersWithFile, this);
 	}
 
 	/* Receives file part and mounts it, updating GUI */
@@ -112,6 +135,23 @@ public class DownloadManager extends Thread {
 			log += "Tempo decorrido: " + timeSpent + "ms";
 
 		JOptionPane.showMessageDialog(new JFrame(), log, "Download Concluído", 1);
+	}
+
+	/* Bad uploaders handling */
+
+	public synchronized void disconnectUser() {
+		usersUploading--;
+	}
+
+	public synchronized void notifyBadUploader(User user) {
+		disconnectUser();
+		User aux = null;
+		for (User x : usersWithFile)
+			if (x.equals(user))
+				aux = x;
+
+		if (aux != null)
+			usersWithFile.remove(aux);
 	}
 
 }
