@@ -38,7 +38,7 @@ public class FileInfoHandler extends Thread {
 	}
 
 	/*
-	 * Gets file information of one user and synchronizes it with other user's
+	 * Gets file information of one user and synchronizes it with other users'
 	 * information
 	 */
 	public synchronized void handleFileInfo(FileDetails[] files, User user) {
@@ -55,7 +55,6 @@ public class FileInfoHandler extends Thread {
 		}
 
 		notify();
-
 	}
 
 	/* Adds a peer to the peers with certain file list */

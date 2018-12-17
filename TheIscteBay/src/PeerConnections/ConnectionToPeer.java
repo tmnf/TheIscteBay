@@ -32,19 +32,24 @@ public class ConnectionToPeer extends PeerConnection {
 
 	@Override
 	public void dealWith(Object aux) throws IOException {
-		if (aux instanceof FileDetails[]) // Recebe a lista de ficheiros com a palavra-chave desejada
+		if (aux instanceof FileDetails[])
 			handleFileInfoReceived((FileDetails[]) aux);
-		else if (aux instanceof FilePart) // Recebe parte do ficheiro pedido
+		else if (aux instanceof FilePart)
 			handleFilePartReceived((FilePart) aux);
 	}
 
 	/* Income Handle Methods */
 
+	/* Sends file information received to be processed */
 	private void handleFileInfoReceived(FileDetails[] files) {
 		fileInfoHandler.handleFileInfo(files, user);
 		interrupt();
 	}
 
+	/*
+	 * Sends file part received to be mounted and checks if there's more parts to
+	 * request
+	 */
 	private void handleFilePartReceived(FilePart filePartReceived) {
 		downManager.receiveFilePart(filePartReceived, user);
 		currentDownload = null;
@@ -53,16 +58,19 @@ public class ConnectionToPeer extends PeerConnection {
 
 	/* Outcome Methods */
 
+	/* Sends a request about the existence of a file */
 	public void sendFileInfoRequest(String keyWord, FileInfoHandler fileInfoHandler) {
 		this.fileInfoHandler = fileInfoHandler;
 		send(new WordSearchMessage(keyWord));
 	}
 
+	/* Sends a file part download request */
 	public void sendFileRequest(DownloadManager downManager) {
 		this.downManager = downManager;
 		sendRequestIfAvaible();
 	}
 
+	/* Requests a file part download, if there's a part left */
 	private void sendRequestIfAvaible() {
 		currentDownload = mainClient.getRequest();
 		if (currentDownload != null)

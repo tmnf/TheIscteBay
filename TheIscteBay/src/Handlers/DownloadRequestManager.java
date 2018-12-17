@@ -7,10 +7,10 @@ import PeerConnections.PeerConnected;
 
 public class DownloadRequestManager {
 
-	// Constants
+	// Max requests handled each time
 	public static final int MAX_REQUESTS = 5;
 
-	// Current requests in line
+	// Number of current requests in line
 	private int currentRequests;
 
 	/* If possible allows client to deal with the request */

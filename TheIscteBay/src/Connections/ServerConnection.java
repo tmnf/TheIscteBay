@@ -43,7 +43,6 @@ public class ServerConnection extends GeneralConnection {
 				return;
 			}
 		}
-
 	}
 
 	@Override
@@ -59,8 +58,9 @@ public class ServerConnection extends GeneralConnection {
 	private void receiveActiveUsers(String[] temp) {
 		currentOnline.clear();
 		while (!temp[0].equals("END")) {
-			System.out.println(temp[0] + " " + temp[1] + " " + temp[2] + " " + temp[3]); // So para teste em aula
-			currentOnline.add(new User(temp[1], Integer.parseInt(temp[2]), Integer.parseInt(temp[3])));
+			User aux = new User(temp[1], Integer.parseInt(temp[2]), Integer.parseInt(temp[3]));
+			System.out.println(aux); // So para teste em aula
+			currentOnline.add(aux);
 			try {
 				temp = inServer.readLine().split(" ");
 			} catch (Exception e) {

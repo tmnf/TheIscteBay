@@ -12,7 +12,7 @@ import PeerObjects.FileDetails;
 public class Utils {
 
 	/*
-	 * Returns existing files that contains a certain keyword in user's file folder
+	 * Returns existing files that contain a certain keyword in user's file folder
 	 */
 
 	public static FileDetails[] getFilesWithName(String filePath, String fileName) throws IOException {
@@ -27,8 +27,8 @@ public class Utils {
 
 		int i = 0;
 		for (File x : filesInFolder) {
-			byte[] fileContent = Files.readAllBytes(x.toPath());
-			filesWithKeyWord[i] = new FileDetails(x.getName(), fileContent.length);
+			int fileSize = Files.readAllBytes(x.toPath()).length;
+			filesWithKeyWord[i] = new FileDetails(x.getName(), fileSize);
 			i++;
 		}
 

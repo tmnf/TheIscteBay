@@ -31,7 +31,7 @@ public class Client {
 	// GUI
 	private GUI gui;
 
-	// Directory Connections
+	// Directory Connection
 	private ServerConnection serverConected;
 
 	// Lists
@@ -88,8 +88,7 @@ public class Client {
 	/* Refreshes current online users */
 	public synchronized void refreshPeersOnline(LinkedList<User> usersOnlineInfo) {
 		usersOnline.clear();
-		for (User x : usersOnlineInfo)
-			usersOnline.add(x);
+		usersOnline.addAll(usersOnlineInfo);
 		refreshed = true;
 		notify();
 	}
@@ -182,7 +181,7 @@ public class Client {
 						try {
 							Socket so = ss.accept();
 							System.out.println("Par conectado: " + so.getInetAddress().getHostAddress());
-							new PeerConnected(so, Client.this, requestManager).start();
+							new PeerConnected(so, Client.this).start();
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
@@ -199,7 +198,7 @@ public class Client {
 
 	/* Sends a list of files to the GUI */
 	public void showOnGuiList(FileInfo[] list) {
-		gui.showOnList(list);
+		gui.showOnGUI(list);
 	}
 
 	/* GETTERS */
@@ -228,6 +227,11 @@ public class Client {
 	/* Returns user interface */
 	public GUI getGui() {
 		return gui;
+	}
+
+	/* Returns request manager */
+	public DownloadRequestManager getRequestManager() {
+		return requestManager;
 	}
 
 	/* Returns and removes a part of the file part request list */

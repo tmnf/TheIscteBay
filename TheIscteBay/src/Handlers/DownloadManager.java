@@ -18,7 +18,7 @@ import PeerObjects.FileBlockRequestMessage;
 
 public class DownloadManager extends Thread {
 
-	// Constants
+	// File Part Global Size
 	public static final int SIZEPART = 1024;
 
 	// File Path
@@ -99,9 +99,8 @@ public class DownloadManager extends Thread {
 		int start = info.getOffset();
 		int finish = start + info.getLenght();
 
-		for (int i = start, aux = 0; i < finish; i++, aux++) {
+		for (int i = start, aux = 0; i < finish; i++, aux++)
 			fileDowloading[i] = filePart[aux];
-		}
 
 		gui.progressOnBar(currentSize);
 
@@ -129,6 +128,7 @@ public class DownloadManager extends Thread {
 			log += "Fornecedor [Endereço: " + aux.getEndereco() + ", Porto: " + aux.getPorto() + "]: " + x.getValue()
 					+ "\n";
 		}
+
 		if (timeSpent > 1000)
 			log += "Tempo decorrido: " + (timeSpent / 1000) + "s";
 		else
@@ -139,10 +139,12 @@ public class DownloadManager extends Thread {
 
 	/* Bad uploaders handling */
 
+	/* Informs the system that a user as disconnected */
 	public synchronized void disconnectUser() {
 		usersUploading--;
 	}
 
+	/* Notifies that a certain user had a problem and removes him from operations */
 	public synchronized void notifyBadUploader(User user) {
 		disconnectUser();
 		User aux = null;

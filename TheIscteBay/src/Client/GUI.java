@@ -58,7 +58,7 @@ public class GUI {
 		topPanel.setLayout(new GridLayout(1, 3, 0, 2));
 		bottPanel.setLayout(new BorderLayout());
 
-		// ==================Top Panel======================== \\
+		/* ==================Top Panel======================== */
 		JTextField txt = new JTextField("Texto a procurar:  ");
 		JTextField searchField = new JTextField();
 		JButton searchButton = new JButton("Procurar");
@@ -118,10 +118,10 @@ public class GUI {
 	}
 
 	/* Shows list on GUI */
-	public void showOnList(FileInfo[] list) {
+	public void showOnGUI(FileInfo[] list) {
 		clearList();
-		for (int i = 0; i != list.length; i++)
-			files.addElement(list[i]);
+		for (FileInfo x : list)
+			files.addElement(x);
 	}
 
 	/* Clears file list on user interface */

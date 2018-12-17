@@ -17,30 +17,33 @@ import Utils.Utils;
 
 public class PeerConnected extends PeerConnection {
 
-	// Request Manger
+	// Request Manager
 	private DownloadRequestManager requestManager;
 
-	public PeerConnected(Socket so, Client client, DownloadRequestManager requestManager) throws IOException {
+	public PeerConnected(Socket so, Client client) throws IOException {
 		super(so, client);
 
-		this.requestManager = requestManager;
+		requestManager = client.getRequestManager();
 	}
 
 	@Override
 	public void dealWith(Object aux) throws IOException {
-		if (aux instanceof WordSearchMessage) // Enviar lista de ficheiros com o nome desejado
-			sendFilesInFolder(((WordSearchMessage) aux).toString());
-		else if (aux instanceof FileBlockRequestMessage) // Enviar parte do ficheiro desejado
+		if (aux instanceof WordSearchMessage)
+			sendFilesInFolder((WordSearchMessage) aux);
+		else if (aux instanceof FileBlockRequestMessage)
 			requestManager.addRequest(new RequestInfo((FileBlockRequestMessage) aux, this));
 	}
 
 	/* Outcome Methods */
 
-	public void sendFilesInFolder(String fileName) throws IOException {
+	/* Sends files with a certain name to a peer requesting */
+	public void sendFilesInFolder(WordSearchMessage wordMessage) throws IOException {
+		String fileName = wordMessage.getKeyWord();
 		FileDetails[] file = Utils.getFilesWithName(mainClient.getPath(), fileName);
 		send(file);
 	}
 
+	/* Answers a file part download request */
 	public void sendFilePartRequested(FileBlockRequestMessage uploadPartInfo) throws IOException {
 		byte[] filePart = Utils.getFilePart(uploadPartInfo, mainClient.getPath());
 

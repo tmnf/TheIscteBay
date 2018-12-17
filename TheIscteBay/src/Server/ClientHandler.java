@@ -26,11 +26,17 @@ public class ClientHandler extends Thread {
 		this.server = server;
 		this.ID = ID;
 
+		initChannels(so);
+	}
+
+	/* Starts communication channels */
+	private void initChannels(Socket so) {
 		try {
 			out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(so.getOutputStream())), true);
 			in = new BufferedReader(new InputStreamReader(so.getInputStream()));
 		} catch (IOException e) {
 			System.err.println("Erro na criação dos canais da Thread do cliente");
+			System.exit(1);
 		}
 	}
 
@@ -42,13 +48,8 @@ public class ClientHandler extends Thread {
 
 				if (aux[0].equals("INSC"))
 					server.registerUser(aux[1], Integer.parseInt(aux[2]), ID);
-				else {
-					if (aux[0].equals("CLT")) {
-						for (User x : server.getUsersOnline())
-							out.println("CLT " + x.toString());
-						out.println("END");
-					}
-				}
+				else if (aux[0].equals("CLT"))
+					sendUsersOnline();
 
 			} catch (Exception e) {
 				server.disconectUser(ID);
@@ -57,4 +58,10 @@ public class ClientHandler extends Thread {
 		}
 	}
 
+	/* Sends users currently registered on directory */
+	private void sendUsersOnline() {
+		for (User x : server.getUsersOnline())
+			out.println("CLT " + x.toString());
+		out.println("END");
+	}
 }
