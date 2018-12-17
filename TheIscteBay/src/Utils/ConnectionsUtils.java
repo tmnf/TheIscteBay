@@ -18,7 +18,6 @@ public class ConnectionsUtils {
 			temp.start();
 			return temp;
 		} catch (Exception e) {
-			System.err.println("Falha na conexão com o par");
 			return temp;
 		}
 	}

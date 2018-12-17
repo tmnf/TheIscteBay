@@ -162,7 +162,8 @@ public class Client {
 	public void connectToPeersWithFile(ArrayList<User> users, DownloadManager downManager) {
 		for (User x : users) {
 			ConnectionToPeer peer = ConnectionsUtils.connectToPeer(x.getEndereco(), x.getPorto(), x.getID(), this);
-			peer.sendFileRequest(downManager);
+			if (peer != null) // Prevents sending requests to gone users
+				peer.sendFileRequest(downManager);
 		}
 	}
 
